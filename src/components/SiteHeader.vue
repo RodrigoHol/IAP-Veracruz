@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { programs } from '../data/programs'
 
+const baseUrl = import.meta.env.BASE_URL
 const menuOpen = ref(false)
 const programMenuOpen = ref(false)
 const isDarkMode = ref(document.documentElement.dataset.theme === 'dark')
@@ -44,7 +45,7 @@ const handleProgramFocusOut = (event) => {
   <header class="site-header">
     <div class="header-inner">
       <RouterLink class="brand" to="/" aria-label="IAP Veracruz, inicio" @click="closeMenu">
-        <img src="/images/iap-logo-horizontal.png" alt="IAP Veracruz — Instituto de Administración Pública" />
+        <img :src="`${baseUrl}images/iap-logo-horizontal.png`" alt="IAP Veracruz — Instituto de Administración Pública" />
       </RouterLink>
 
       <button

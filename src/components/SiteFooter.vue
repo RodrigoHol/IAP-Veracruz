@@ -1,8 +1,12 @@
+<script setup>
+const baseUrl = import.meta.env.BASE_URL
+</script>
+
 <template>
   <footer class="site-footer">
     <div class="footer-main">
       <RouterLink class="footer-brand" to="/" aria-label="IAP Veracruz, volver al inicio">
-        <img src="/images/iap-logo.png" alt="" />
+        <img :src="`${baseUrl}images/iap-logo.png`" alt="" />
         <span>Instituto de<br />Administración Pública<br />de Veracruz</span>
       </RouterLink>
 
