@@ -11,12 +11,18 @@
     <section class="page-shell contact-content">
       <div class="contact-details">
         <section class="contact-card">
-          <span class="card-label">Atención exclusiva por llamadas telefónicas</span>
-          <a href="tel:2282370893" class="phone">228 237 0893</a>
-          <p>Teléfono IAP</p>
+          <div class="contact-card-heading">
+            <span class="material-icon contact-icon" aria-hidden="true">call</span>
+            <span class="card-label">Teléfono</span>
+          </div>
+          <a href="tel:2282370893" class="phone" aria-label="Llamar al 228 237 0893">228 237 0893</a>
+          <p>Atención exclusiva por llamadas telefónicas.</p>
         </section>
         <section class="contact-card">
-          <span class="card-label">Visítanos</span>
+          <div class="contact-card-heading">
+            <span class="material-icon contact-icon" aria-hidden="true">location_on</span>
+            <span class="card-label">Visítanos</span>
+          </div>
           <address>
             Colmerillo No. 3, Nuevo Xalapa,<br />
             91097 Xalapa-Enríquez, Veracruz.
@@ -27,16 +33,57 @@
             target="_blank"
             rel="noopener noreferrer"
           >
-            Abrir indicaciones <span class="material-icon" aria-hidden="true">arrow_outward</span>
+            <span class="material-icon" aria-hidden="true">directions</span>
+            Abrir indicaciones
           </a>
+        </section>
+        <section class="contact-card social-card">
+          <div class="contact-card-heading">
+            <span class="material-icon contact-icon" aria-hidden="true">share</span>
+            <span class="card-label">Redes sociales</span>
+          </div>
+          <p>Síguenos en nuestras cuentas oficiales.</p>
+          <div class="contact-socials">
+            <a
+              class="contact-social-link"
+              href="https://www.instagram.com/iap.veracruz?jplx=ZHdheXRvaDd2aW9v"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram oficial del IAP Veracruz"
+            >
+              <svg class="contact-social-icon instagram-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="5" />
+                <circle cx="12" cy="12" r="4" />
+                <circle class="instagram-dot" cx="17.5" cy="6.5" r="1" />
+              </svg>
+              <span>Instagram</span>
+              <span class="material-icon social-arrow" aria-hidden="true">arrow_outward</span>
+            </a>
+            <a
+              class="contact-social-link"
+              href="https://www.facebook.com/IAP.Veracruz.Oficial/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook oficial del IAP Veracruz"
+            >
+              <svg class="contact-social-icon facebook-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 0C5.373 0 0 5.373 0 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078V12h3.047V9.356c0-3.007 1.792-4.668 4.533-4.668 1.312 0 2.686.234 2.686.234v2.953h-1.513c-1.491 0-1.956.925-1.956 1.874V12h3.328l-.532 3.469h-2.796v8.385C19.612 22.954 24 17.99 24 12c0-6.627-5.373-12-12-12z" />
+              </svg>
+              <span>Facebook</span>
+              <span class="material-icon social-arrow" aria-hidden="true">arrow_outward</span>
+            </a>
+          </div>
         </section>
       </div>
 
       <section class="map-section" aria-labelledby="map-title">
         <div class="map-heading">
-          <div>
-            <p class="section-kicker">Ubicación</p>
-            <h2 id="map-title">Cómo llegar al IAP</h2>
+          <div class="map-title">
+            <span class="material-icon map-icon" aria-hidden="true">map</span>
+            <div>
+              <p class="section-kicker">Ubicación</p>
+              <h2 id="map-title">Cómo llegar al IAP</h2>
+            </div>
           </div>
           <span>Xalapa-Enríquez, Veracruz</span>
         </div>
@@ -102,15 +149,36 @@ h1 {
 
 .contact-details {
   display: grid;
-  grid-template-columns: 0.8fr 1.2fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
 }
 
 .contact-card {
-  min-height: 190px;
+  display: flex;
+  min-height: 220px;
   padding: 1.5rem;
+  flex-direction: column;
   border: 1px solid var(--color-border);
   background: var(--color-surface);
+}
+
+.contact-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.contact-icon,
+.map-icon {
+  display: grid;
+  width: 2.6rem;
+  height: 2.6rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 3px;
+  color: var(--color-primary-text);
+  background: var(--color-surface-soft);
+  font-size: 1.3rem;
 }
 
 .card-label {
@@ -122,10 +190,11 @@ h1 {
 }
 
 .phone {
-  display: block;
-  margin-top: 1rem;
+  display: inline-flex;
+  margin-top: 1.2rem;
+  align-items: center;
   color: var(--color-primary-text);
-  font-size: 2rem;
+  font-size: clamp(1.7rem, 2.2vw, 2rem);
   text-decoration: none;
 }
 
@@ -136,7 +205,7 @@ h1 {
 }
 
 address {
-  margin-top: 1rem;
+  margin-top: 1.2rem;
   color: var(--color-green-text);
   font-size: 1rem;
   font-style: normal;
@@ -144,12 +213,78 @@ address {
 }
 
 .directions-link {
-  display: inline-block;
-  margin-top: 0.65rem;
+  display: inline-flex;
+  margin-top: auto;
+  padding-top: 0.8rem;
+  align-items: center;
+  gap: 0.45rem;
   color: var(--color-primary-text);
   font-size: 0.78rem;
   font-weight: 700;
   text-decoration: none;
+}
+
+.social-card > p {
+  margin: 0.9rem 0 1rem;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+}
+
+.contact-socials {
+  display: grid;
+  margin-top: auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.contact-social-link {
+  display: flex;
+  min-width: 0;
+  min-height: 2.8rem;
+  padding: 0.55rem 0.65rem;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--color-border);
+  color: var(--color-green-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    border-color 180ms ease,
+    color 180ms ease,
+    background-color 180ms ease;
+}
+
+.contact-social-link:hover {
+  border-color: var(--color-secondary-text);
+  color: var(--color-primary-text);
+  background: var(--color-surface-soft);
+}
+
+.contact-social-icon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+}
+
+.instagram-icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+.instagram-dot {
+  fill: currentColor;
+  stroke: none;
+}
+
+.facebook-icon {
+  fill: currentColor;
+}
+
+.social-arrow {
+  margin-left: auto;
+  font-size: 1rem;
 }
 
 .map-section {
@@ -179,6 +314,16 @@ h2 {
   font-size: 0.78rem;
 }
 
+.map-title {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.map-title .section-kicker {
+  margin-bottom: 0.45rem;
+}
+
 iframe {
   display: block;
   width: 100%;
@@ -191,6 +336,16 @@ iframe {
   margin: 1rem 0 0;
   color: var(--color-muted);
   font-size: 0.78rem;
+}
+
+@media (max-width: 960px) {
+  .contact-details {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .contact-card:last-child {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 650px) {
@@ -208,6 +363,14 @@ iframe {
 
   .contact-details {
     grid-template-columns: 1fr;
+  }
+
+  .contact-card {
+    min-height: 190px;
+  }
+
+  .contact-card:last-child {
+    grid-column: auto;
   }
 
   .map-heading {

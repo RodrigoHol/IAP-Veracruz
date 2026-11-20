@@ -1,20 +1,29 @@
 <script setup>
+import { ref } from 'vue'
 import PhotoPlaceholder from './PhotoPlaceholder.vue'
+
+const openPrinciple = ref(null)
+const hoveredPrinciple = ref(null)
+const isPrincipleOpen = (number) =>
+  openPrinciple.value === number || hoveredPrinciple.value === number
 
 const principles = [
   {
     number: '01',
     title: 'Misión',
+    icon: 'flag',
     description: 'Profesionalizar el servicio público mediante conocimiento, formación y compromiso con la sociedad.',
   },
   {
     number: '02',
     title: 'Visión',
+    icon: 'visibility',
     description: 'Ser un referente en la preparación de personas capaces de generar valor público en Veracruz.',
   },
   {
     number: '03',
     title: 'Valores',
+    icon: 'verified_user',
     description: 'Ética pública, transparencia, responsabilidad y vocación de servicio como guía cotidiana.',
   },
 ]
@@ -48,10 +57,35 @@ const principles = [
     </div>
 
     <div class="principles-grid">
-      <article v-for="principle in principles" :key="principle.number" class="principle-card">
-        <span class="principle-number">{{ principle.number }}</span>
-        <h4>{{ principle.title }}</h4>
-        <p>{{ principle.description }}</p>
+      <article
+        v-for="principle in principles"
+        :key="principle.number"
+        class="principle-card"
+        @mouseenter="hoveredPrinciple = principle.number"
+        @mouseleave="hoveredPrinciple = null"
+      >
+        <button
+          class="principle-toggle"
+          :class="{ 'is-open': isPrincipleOpen(principle.number) }"
+          type="button"
+          :aria-expanded="isPrincipleOpen(principle.number)"
+          :aria-controls="`principle-description-${principle.number}`"
+          @click="openPrinciple = openPrinciple === principle.number ? null : principle.number"
+        >
+          <span class="principle-title">{{ principle.title }}</span>
+          <span class="material-icon principle-symbol" aria-hidden="true">{{ principle.icon }}</span>
+        </button>
+        <div
+          :id="`principle-description-${principle.number}`"
+          class="principle-description"
+          :class="{ 'is-open': isPrincipleOpen(principle.number) }"
+          :aria-hidden="!isPrincipleOpen(principle.number)"
+          :inert="!isPrincipleOpen(principle.number)"
+        >
+          <div class="principle-description-inner">
+            <p>{{ principle.description }}</p>
+          </div>
+        </div>
         <span class="principle-rule" aria-hidden="true"></span>
       </article>
     </div>
@@ -188,33 +222,89 @@ h3 {
 
 .principle-card {
   position: relative;
-  min-height: 215px;
-  padding: 1.5rem 1.5rem 1.7rem 0;
+  min-height: 110px;
+  padding: 1.1rem 1.5rem 1.5rem 0;
 }
 
 .principle-card + .principle-card {
-  padding-left: 1.75rem;
+  padding-left: 1.5rem;
   border-left: 1px solid var(--color-border);
 }
 
+.principle-toggle {
+  display: grid;
+  width: 100%;
+  padding: 0;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.8rem;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
 .principle-number {
+  grid-column: 1 / -1;
   color: var(--color-secondary-text);
   font-size: 0.69rem;
   font-weight: 700;
   letter-spacing: 0.12em;
 }
 
-h4 {
-  margin: 1.5rem 0 0.5rem;
+.principle-title {
   color: var(--color-green-text);
   font-family: var(--font-heading);
   font-size: 1.55rem;
   font-weight: 400;
 }
 
-.principle-card p {
+.principle-symbol {
+  display: grid;
+  width: 2.7rem;
+  height: 2.7rem;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  color: var(--color-secondary-text);
+  background: var(--color-surface-soft);
+  font-size: 1.3rem;
+  transition:
+    color 320ms ease,
+    background-color 320ms ease,
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.principle-card:hover .principle-symbol,
+.principle-toggle.is-open .principle-symbol {
+  transform: scale(1.08);
+  color: var(--color-primary-text);
+}
+
+.principle-description {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 360ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 280ms ease;
+}
+
+.principle-description.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.principle-description-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.principle-description p {
   max-width: 310px;
   margin: 0;
+  padding-top: 0.75rem;
   color: var(--color-muted);
   font-size: 0.86rem;
   line-height: 1.65;
@@ -229,7 +319,7 @@ h4 {
   background: var(--color-primary);
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 250ms ease;
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .principle-card:hover .principle-rule {
@@ -289,17 +379,13 @@ h4 {
 
   .principle-card {
     min-height: unset;
-    padding: 1.3rem 0 1.5rem;
+    padding: 1.3rem 0 1.1rem;
   }
 
   .principle-card + .principle-card {
     padding-left: 0;
     border-top: 1px solid var(--color-border);
     border-left: 0;
-  }
-
-  h4 {
-    margin-top: 0.8rem;
   }
 
   .principle-rule {

@@ -38,7 +38,7 @@ const hasCreditDiscrepancy = computed(() => program.value?.curriculumTotals
           <span><strong>Modalidad</strong>{{ program.modality || 'Por confirmar' }}</span>
           <span v-if="program.rvoeRequired"><strong>RVOE</strong>Dato oficial por confirmar</span>
         </div>
-        <a class="hero-link" href="#preinscripcion">Solicitar preinscripción <span class="material-icon" aria-hidden="true">south</span></a>
+        <a class="hero-link" href="#novedades">Recibir novedades <span class="material-icon" aria-hidden="true">south</span></a>
       </div>
     </header>
 
@@ -54,19 +54,25 @@ const hasCreditDiscrepancy = computed(() => program.value?.curriculumTotals
 
       <section class="facts-grid" aria-label="Información del programa">
         <article class="fact-card">
-          <span class="fact-number">01</span>
-          <h2>Duración</h2>
+          <div class="fact-heading">
+            <h2>Duración</h2>
+            <span class="material-icon fact-icon" aria-hidden="true">calendar_month</span>
+          </div>
           <p>{{ program.duration || 'La duración y el calendario se confirmarán en la convocatoria oficial.' }}</p>
         </article>
         <article class="fact-card">
-          <span class="fact-number">02</span>
-          <h2>Perfil de ingreso</h2>
+          <div class="fact-heading">
+            <h2>Perfil de ingreso</h2>
+            <span class="material-icon fact-icon" aria-hidden="true">person_search</span>
+          </div>
           <p v-if="program.admissionProfile">{{ program.admissionProfile }}</p>
           <p v-else class="pending-copy">Los requisitos oficiales de ingreso están pendientes de confirmación por el IAP.</p>
         </article>
         <article class="fact-card">
-          <span class="fact-number">03</span>
-          <h2>Perfil de egreso</h2>
+          <div class="fact-heading">
+            <h2>Perfil de egreso</h2>
+            <span class="material-icon fact-icon" aria-hidden="true">school</span>
+          </div>
           <ul v-if="program.graduateProfile">
             <li v-for="profile in program.graduateProfile" :key="profile">{{ profile }}</li>
           </ul>
@@ -80,13 +86,20 @@ const hasCreditDiscrepancy = computed(() => program.value?.curriculumTotals
             <p class="section-kicker">Plan de estudios 2025</p>
             <h2>Tira de materias</h2>
           </div>
-          <p>{{ program.cycles.length }} ciclos · {{ program.curriculumTotals.credits.toFixed(3) }} créditos según total general del documento</p>
+          <p>{{ program.cycles.length }} {{ program.cycleUnit || 'ciclos' }} · {{ program.curriculumTotals.credits.toFixed(3) }} créditos</p>
         </div>
 
         <div v-for="cycle in program.cycles" :key="cycle.name" class="cycle">
           <h3>{{ cycle.name }}</h3>
           <div class="table-wrap">
             <table>
+              <colgroup>
+                <col class="subject-column" />
+                <col class="code-column" />
+                <col class="hours-column" />
+                <col class="hours-column" />
+                <col class="credits-column" />
+              </colgroup>
               <thead>
                 <tr>
                   <th scope="col">Asignatura</th>
@@ -119,7 +132,11 @@ const hasCreditDiscrepancy = computed(() => program.value?.curriculumTotals
           La suma de los créditos de las asignaturas es {{ listedCredits.toFixed(3) }}, pero el total general del documento indica
           {{ program.curriculumTotals.credits.toFixed(3) }}. El IAP debe confirmar la cifra oficial.
         </p>
-        <p class="table-legend">HD: horas con docente · HI: horas independientes. Fuente: plan de estudios 2025 proporcionado por el IAP.</p>
+        <p class="table-legend">
+          <span class="legend-hd"><strong>HD:</strong> horas con docente</span>
+          <span class="legend-separator" aria-hidden="true">·</span>
+          <span class="legend-hi"><strong>HI:</strong> horas independientes</span>
+        </p>
       </section>
 
       <section v-else class="curriculum-pending">
@@ -257,11 +274,20 @@ h1 {
   border-left: 1px solid var(--color-border);
 }
 
-.fact-number {
+.fact-heading {
+  display: flex;
+  margin-bottom: 0.9rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.fact-icon {
+  flex: 0 0 auto;
+  padding-left: 0.75rem;
+  border-left: 1px solid var(--color-border);
   color: var(--color-secondary-text);
-  font-size: 0.67rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  font-size: 1.7rem;
 }
 
 h2 {
@@ -270,11 +296,16 @@ h2 {
   font-size: 1.55rem;
 }
 
+.fact-heading h2 {
+  margin: 0;
+}
+
 .fact-card p,
 .fact-card li {
   color: var(--color-muted);
   font-size: 0.82rem;
   line-height: 1.65;
+  text-align: justify;
 }
 
 .fact-card p {
@@ -337,10 +368,28 @@ h2 {
 
 table {
   width: 100%;
+  min-width: 720px;
+  table-layout: fixed;
   border-collapse: collapse;
   color: var(--color-ink);
   font-size: 0.79rem;
   text-align: left;
+}
+
+.subject-column {
+  width: 44%;
+}
+
+.code-column {
+  width: 16%;
+}
+
+.hours-column {
+  width: 11%;
+}
+
+.credits-column {
+  width: 18%;
 }
 
 th,
@@ -354,6 +403,12 @@ thead th {
   font-size: 0.68rem;
   font-weight: 700;
   white-space: nowrap;
+}
+
+thead th:not(:first-child),
+tbody td {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 tbody th {
@@ -387,9 +442,37 @@ tbody td {
 }
 
 .table-legend {
+  display: flex;
   margin: 0.8rem 0 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.65rem;
   color: var(--color-muted);
   font-size: 0.72rem;
+}
+
+.legend-hd,
+.legend-hi {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.legend-hd strong,
+.legend-hi strong {
+  padding: 0.12rem 0.4rem;
+  border-radius: 2px;
+  font-size: 0.68rem;
+}
+
+.legend-hd strong {
+  color: var(--color-primary-text);
+  background: var(--color-warning-surface);
+}
+
+.legend-hi strong {
+  color: var(--color-green-text);
+  background: var(--color-surface-soft);
 }
 
 .curriculum-pending {

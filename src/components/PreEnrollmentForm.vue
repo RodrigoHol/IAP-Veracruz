@@ -11,17 +11,17 @@ defineProps({
 const notice = ref('')
 
 const handleSubmit = () => {
-  notice.value = 'Esta vista previa no envía ni almacena tus datos. Para iniciar tu preinscripción, llama al 228 237 0893.'
+  notice.value = 'Esta vista previa no envía tus datos ni activa una suscripción. Para recibir información oficial, llama al 228 237 0893.'
 }
 </script>
 
 <template>
-  <section id="preinscripcion" class="pre-enrollment">
+  <section id="novedades" class="pre-enrollment">
     <div class="form-intro">
-      <p class="section-kicker">Da el siguiente paso</p>
-      <h2>Formulario de preinscripción</h2>
-      <p>Completa tus datos para preparar tu solicitud de información sobre el programa.</p>
-      <p class="privacy-note">Versión de demostración: no ingreses datos personales. El formulario no transmite información.</p>
+      <p class="section-kicker">Noticias y convocatorias</p>
+      <h2>Mantente al tanto de las novedades</h2>
+      <p>Comparte tus datos para recibir primero avisos sobre nuevas convocatorias, fechas y noticias del programa.</p>
+      <p class="privacy-note">Esta versión de demostración no envía ni almacena datos. No ingreses información personal.</p>
     </div>
 
     <form class="enrollment-form" @submit.prevent="handleSubmit">
@@ -56,7 +56,7 @@ const handleSubmit = () => {
         Programa de interés
         <input name="program" :value="programTitle" readonly />
       </label>
-      <button type="submit">Revisar solicitud <span class="material-icon" aria-hidden="true">arrow_outward</span></button>
+      <button type="submit">Quiero recibir novedades <span class="material-icon" aria-hidden="true">arrow_outward</span></button>
       <p v-if="notice" class="form-notice" role="status">{{ notice }}</p>
     </form>
   </section>

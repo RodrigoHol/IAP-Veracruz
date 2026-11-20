@@ -18,8 +18,38 @@ const baseUrl = import.meta.env.BASE_URL
       </nav>
 
       <div class="footer-contact">
-        <span>Atención exclusiva por llamadas telefónicas</span>
-        <a href="tel:2282370893">228 237 0893</a>
+        <p class="footer-contact-note">Atención exclusiva por llamadas telefónicas</p>
+        <a class="footer-phone" href="tel:2282370893" aria-label="Llamar al 228 237 0893">
+          <span class="material-icon phone-icon" aria-hidden="true">call</span>
+          <span>228 237 0893</span>
+        </a>
+        <div class="footer-socials">
+          <span class="footer-socials-label">Redes oficiales</span>
+          <a
+            class="social-link"
+            href="https://www.instagram.com/iap.veracruz?jplx=ZHdheXRvaDd2aW9v"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram oficial del IAP Veracruz"
+          >
+            <svg class="social-icon instagram-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="5" />
+              <circle cx="12" cy="12" r="4" />
+              <circle class="instagram-dot" cx="17.5" cy="6.5" r="1" />
+            </svg>
+          </a>
+          <a
+            class="social-link"
+            href="https://www.facebook.com/IAP.Veracruz.Oficial/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Facebook oficial del IAP Veracruz"
+          >
+            <svg class="social-icon facebook-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 0C5.373 0 0 5.373 0 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078V12h3.047V9.356c0-3.007 1.792-4.668 4.533-4.668 1.312 0 2.686.234 2.686.234v2.953h-1.513c-1.491 0-1.956.925-1.956 1.874V12h3.328l-.532 3.469h-2.796v8.385C19.612 22.954 24 17.99 24 12c0-6.627-5.373-12-12-12z" />
+            </svg>
+          </a>
+        </div>
       </div>
     </div>
     <div class="footer-bottom">
@@ -94,19 +124,86 @@ const baseUrl = import.meta.env.BASE_URL
 .footer-contact {
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   gap: 0.45rem;
   text-align: right;
 }
 
-.footer-contact span {
+.footer-contact-note {
+  max-width: 280px;
+  margin: 0;
   color: rgba(255, 255, 255, 0.56);
-  font-size: 0.66rem;
+  font-size: 0.82rem;
+  line-height: 1.4;
 }
 
-.footer-contact a {
+.footer-phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
   color: #fff;
   font-size: 1.35rem;
   text-decoration: none;
+}
+
+.phone-icon {
+  color: #e2bf8f;
+  font-size: 1.2em;
+}
+
+.footer-socials {
+  display: flex;
+  margin-top: 0.25rem;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.footer-socials-label {
+  margin-right: 0.15rem;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 0.74rem;
+}
+
+.social-link {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.88);
+  transition:
+    border-color 180ms ease,
+    color 180ms ease,
+    background-color 180ms ease,
+    transform 180ms ease;
+}
+
+.social-link:hover {
+  transform: translateY(-2px);
+  border-color: #e2bf8f;
+  color: #e2bf8f;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.social-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.instagram-icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+.instagram-dot {
+  fill: currentColor;
+  stroke: none;
+}
+
+.facebook-icon {
+  fill: currentColor;
 }
 
 .footer-bottom {
@@ -187,14 +284,17 @@ const baseUrl = import.meta.env.BASE_URL
   }
 
   .footer-contact {
-    max-width: 145px;
+    width: 100%;
+    align-items: flex-start;
+    text-align: left;
   }
 
-  .footer-contact span {
-    font-size: 0.58rem;
+  .footer-contact-note {
+    max-width: 100%;
+    font-size: 0.74rem;
   }
 
-  .footer-contact a {
+  .footer-phone {
     font-size: 1.1rem;
   }
 
