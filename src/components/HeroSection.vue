@@ -1,6 +1,63 @@
 <script setup>
-import PhotoPlaceholder from './PhotoPlaceholder.vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+
+const baseUrl = import.meta.env.BASE_URL
+const AUTOPLAY_MS = 20000
+
+const heroSlides = [
+  {
+    image: 'images/fachada-1.webp',
+    alt: 'Fachada principal del Instituto de Administración Pública de Veracruz',
+    width: 1600,
+    height: 900,
+    position: '50% 25%',
+    label: 'Fachada principal del IAP',
+  },
+  {
+    image: 'images/area-comun-2.webp',
+    alt: 'Jardín de acceso y placa institucional inaugural del IAP Veracruz',
+    width: 1200,
+    height: 900,
+    position: '55% 55%',
+    label: 'Acceso y placa institucional',
+  },
+]
+
+const activeIndex = ref(0)
+let rotationTimer = null
+
+const clearRotation = () => {
+  if (rotationTimer) {
+    clearInterval(rotationTimer)
+    rotationTimer = null
+  }
+}
+
+const startRotation = () => {
+  clearRotation()
+  rotationTimer = setInterval(() => {
+    activeIndex.value = (activeIndex.value + 1) % heroSlides.length
+  }, AUTOPLAY_MS)
+}
+
+const goToSlide = (index) => {
+  activeIndex.value = index
+  startRotation()
+}
+
+const stepSlide = (offset) => {
+  activeIndex.value = (activeIndex.value + offset + heroSlides.length) % heroSlides.length
+  startRotation()
+}
+
+onMounted(() => {
+  startRotation()
+})
+
+onBeforeUnmount(() => {
+  clearRotation()
+})
 </script>
 
 <template>
@@ -17,7 +74,7 @@ import { RouterLink } from 'vue-router'
             Explorar oferta académica
             <span class="material-icon" aria-hidden="true">arrow_outward</span>
           </RouterLink>
-          <RouterLink class="text-link" to="/#instituto">Conoce el IAP <span class="material-icon" aria-hidden="true">south</span></RouterLink>
+          <RouterLink class="text-link" to="/conocenos">Conoce el IAP <span class="material-icon" aria-hidden="true">arrow_outward</span></RouterLink>
         </div>
         <div class="hero-note">
           <span class="note-line" aria-hidden="true"></span>
@@ -26,17 +83,127 @@ import { RouterLink } from 'vue-router'
       </div>
 
       <div class="hero-visual">
-        <PhotoPlaceholder label="Fachada principal del IAP" variant="hero" />
-        <div class="visual-stamp" aria-hidden="true">
-          <span>INSTITUTO DE</span>
-          <strong>ADMINISTRACIÓN<br />PÚBLICA</strong>
-          <span>VERACRUZ</span>
+        <div
+          class="hero-photo"
+          role="region"
+          aria-roledescription="carrusel"
+          aria-label="Fotografías de las instalaciones del IAP Veracruz"
+        >
+          <img
+            v-for="(slide, index) in heroSlides"
+            :key="slide.image"
+            class="hero-slide"
+            :class="{ 'is-active': activeIndex === index }"
+            :src="`${baseUrl}${slide.image}`"
+            :alt="slide.alt"
+            :width="slide.width"
+            :height="slide.height"
+            :style="{ objectPosition: slide.position }"
+            :fetchpriority="index === 0 ? 'high' : undefined"
+            :loading="index === 0 ? 'eager' : 'lazy'"
+            :aria-hidden="activeIndex !== index"
+            decoding="async"
+          />
+
+          <div class="hero-carousel-controls">
+            <div class="hero-indicators" role="group" aria-label="Seleccionar fotografía">
+              <button
+                v-for="(slide, index) in heroSlides"
+                :key="slide.image"
+                class="hero-indicator"
+                type="button"
+                :aria-label="`Ver fotografía ${index + 1}: ${slide.label}`"
+                :aria-pressed="activeIndex === index"
+                @click="goToSlide(index)"
+              ></button>
+            </div>
+            <div class="hero-carousel-nav">
+              <button
+                class="hero-nav-button"
+                type="button"
+                aria-label="Fotografía anterior"
+                @click="stepSlide(-1)"
+              >
+                <span class="material-icon" aria-hidden="true">chevron_left</span>
+              </button>
+              <button
+                class="hero-nav-button"
+                type="button"
+                aria-label="Siguiente fotografía"
+                @click="stepSlide(1)"
+              >
+                <span class="material-icon" aria-hidden="true">chevron_right</span>
+              </button>
+            </div>
+          </div>
         </div>
-        <span class="visual-index" aria-hidden="true">01 / VER</span>
+        <div class="visual-stamp">
+          <svg class="stamp-medal" viewBox="0 0 180 216" aria-hidden="true">
+            <defs>
+              <linearGradient id="medal-gold-outer" x1="12%" y1="8%" x2="88%" y2="92%">
+                <stop offset="0%" stop-color="#f9e39e" />
+                <stop offset="38%" stop-color="#dfb254" />
+                <stop offset="72%" stop-color="#bd892f" />
+                <stop offset="100%" stop-color="#8c5f18" />
+              </linearGradient>
+              <radialGradient id="medal-gold-face" cx="35%" cy="28%" r="72%">
+                <stop offset="0%" stop-color="#fff6d6" />
+                <stop offset="52%" stop-color="#f1cc76" />
+                <stop offset="100%" stop-color="#cc9638" />
+              </radialGradient>
+              <linearGradient id="medal-ribbon" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#b98329" />
+                <stop offset="55%" stop-color="#dca949" />
+                <stop offset="100%" stop-color="#9e6d1d" />
+              </linearGradient>
+            </defs>
+
+            <!-- Listones inferiores de premio (corte en V) -->
+            <path
+              d="M54 132 L34 208 L57 193 L75 210 L86 142 Z"
+              fill="url(#medal-ribbon)"
+              stroke="#7d5313"
+              stroke-width="1.5"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M126 132 L146 208 L123 193 L105 210 L94 142 Z"
+              fill="url(#medal-ribbon)"
+              stroke="#7d5313"
+              stroke-width="1.5"
+              stroke-linejoin="round"
+            />
+            <path d="M62 145 L49 198" stroke="#f7e29e" stroke-opacity="0.55" stroke-width="1.5" />
+            <path d="M118 145 L131 198" stroke="#f7e29e" stroke-opacity="0.55" stroke-width="1.5" />
+
+            <!-- Roseta dorada festoneada de 16 pétalos -->
+            <path
+              d="M164.0 90.0 Q178.3 107.6 158.4 118.3 Q164.8 140.0 142.3 142.3 Q140.0 164.8 118.3 158.4 Q107.6 178.3 90.0 164.0 Q72.4 178.3 61.7 158.4 Q40.0 164.8 37.7 142.3 Q15.2 140.0 21.6 118.3 Q1.7 107.6 16.0 90.0 Q1.7 72.4 21.6 61.7 Q15.2 40.0 37.7 37.7 Q40.0 15.2 61.7 21.6 Q72.4 1.7 90.0 16.0 Q107.6 1.7 118.3 21.6 Q140.0 15.2 142.3 37.7 Q164.8 40.0 158.4 61.7 Q178.3 72.4 164.0 90.0 Z"
+              fill="url(#medal-gold-outer)"
+              stroke="#845714"
+              stroke-width="1.5"
+              stroke-linejoin="round"
+            />
+
+            <!-- Cara interior metálica + anillo grabado -->
+            <circle cx="90" cy="90" r="65" fill="url(#medal-gold-face)" stroke="#8c5e18" stroke-width="1.5" />
+            <circle cx="90" cy="90" r="59.5" fill="none" stroke="#7d5214" stroke-opacity="0.5" stroke-width="1" stroke-dasharray="3 2.5" />
+          </svg>
+
+          <div class="stamp-content">
+            <strong class="stamp-years">
+              <span class="stamp-number">53</span>
+              <span class="stamp-unit">Años</span>
+            </strong>
+            <span class="stamp-divider" aria-hidden="true"></span>
+            <span class="stamp-caption">de Excelencia</span>
+          </div>
+        </div>
+        <span class="visual-index" aria-hidden="true">{{ String(activeIndex + 1).padStart(2, '0') }} / VER</span>
       </div>
     </div>
     <div class="hero-bottom">
-      <span>Instituto de Administración Pública del Estado de Veracruz, A.C. · Fundado en 1978</span>
+      <span>Instituto de Administración Pública del Estado de Veracruz, A.C. · Fundado en 1973</span>
       <RouterLink :to="{ name: 'home', hash: '#convocatoria' }">Ver convocatoria <span class="material-icon" aria-hidden="true">south</span></RouterLink>
     </div>
   </section>
@@ -191,34 +358,156 @@ h1 em {
   animation: rise-in 850ms 120ms both;
 }
 
+.hero-photo {
+  position: relative;
+  height: 470px;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #1e2d29;
+  box-shadow: 18px 22px 0 rgba(186, 134, 74, 0.24);
+}
+
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 600ms ease;
+  pointer-events: none;
+}
+
+.hero-slide.is-active {
+  opacity: 1;
+}
+
+.hero-carousel-controls {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  padding: 2.2rem 1rem 0.9rem;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(0deg, rgba(18, 42, 39, 0.72), transparent);
+}
+
+.hero-indicators,
+.hero-carousel-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.hero-indicator {
+  width: 0.5rem;
+  height: 0.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  transition: width 180ms ease, background-color 180ms ease;
+}
+
+.hero-indicator[aria-pressed="true"] {
+  width: 1.5rem;
+  background: #d4a669;
+}
+
+.hero-nav-button {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 2px;
+  color: #fff;
+  background: rgba(18, 42, 39, 0.55);
+  cursor: pointer;
+  transition: border-color 180ms ease, color 180ms ease, background-color 180ms ease;
+}
+
+.hero-nav-button:hover {
+  border-color: #e4bd83;
+  color: #e4bd83;
+  background: rgba(18, 42, 39, 0.8);
+}
+
 .visual-stamp {
   position: absolute;
-  top: 38px;
-  left: -42px;
+  z-index: 3;
+  top: 22px;
+  left: -48px;
+  width: 174px;
+  transform: rotate(-7deg);
+  filter: drop-shadow(0 14px 26px rgba(18, 22, 20, 0.34));
+  pointer-events: none;
+  user-select: none;
+}
+
+.stamp-medal {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.stamp-content {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 83.333%;
   display: flex;
-  width: 132px;
-  height: 132px;
-  padding: 1rem;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(232, 225, 213, 0.8);
-  border-radius: 50%;
-  color: var(--color-green);
-  background: #e8e1d5;
-  font-size: 0.56rem;
-  letter-spacing: 0.09em;
-  line-height: 1.5;
+  padding: 0.75rem 1.05rem;
   text-align: center;
-  transform: rotate(-9deg);
 }
 
-.visual-stamp strong {
-  margin: 0.25rem 0;
-  color: var(--color-primary);
-  font-size: 0.82rem;
+.stamp-years {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #5d0e27;
+  font-family: var(--font-heading);
+  line-height: 0.92;
+  text-shadow: 0 1px 0 rgba(255, 248, 220, 0.7);
+}
+
+.stamp-number {
+  font-size: 3rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.stamp-unit {
+  margin-top: 0.08rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.stamp-divider {
+  width: 44px;
+  height: 1px;
+  margin: 0.22rem 0 0.2rem;
+  background: rgba(93, 14, 39, 0.35);
+}
+
+.stamp-caption {
+  color: #462a07;
+  font-size: 0.8rem;
+  font-weight: 700;
   letter-spacing: 0.02em;
-  line-height: 1.1;
+  line-height: 1.15;
+  white-space: nowrap;
 }
 
 .visual-index {
@@ -277,9 +566,31 @@ h1 em {
   }
 
   .visual-stamp {
-    left: -26px;
-    width: 108px;
-    height: 108px;
+    top: 16px;
+    left: -28px;
+    width: 144px;
+  }
+
+  .stamp-content {
+    padding: 0.65rem 0.85rem;
+  }
+
+  .stamp-number {
+    font-size: 2.45rem;
+  }
+
+  .stamp-unit {
+    font-size: 1rem;
+  }
+
+  .stamp-caption {
+    font-size: 0.68rem;
+  }
+}
+
+@media (max-width: 760px) {
+  .hero-photo {
+    height: 340px;
   }
 }
 
@@ -309,8 +620,25 @@ h1 em {
   }
 
   .visual-stamp {
-    top: 20px;
-    left: -30px;
+    top: 12px;
+    left: -24px;
+    width: 132px;
+  }
+
+  .stamp-content {
+    padding: 0.55rem 0.8rem;
+  }
+
+  .stamp-number {
+    font-size: 2.25rem;
+  }
+
+  .stamp-unit {
+    font-size: 0.92rem;
+  }
+
+  .stamp-caption {
+    font-size: 0.62rem;
   }
 
   .hero-bottom {

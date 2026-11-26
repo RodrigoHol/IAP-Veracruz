@@ -33,6 +33,10 @@ const isUpcoming = (program) => program.availability === 'upcoming'
               <span class="material-icon" aria-hidden="true">check_circle</span>
               Oferta vigente
             </span>
+            <span v-else-if="program.period" class="program-status">
+              <span class="material-icon" aria-hidden="true">event</span>
+              Periodo: {{ program.period }}
+            </span>
           </div>
           <h3>{{ program.title }}</h3>
           <p>{{ program.summary }}</p>

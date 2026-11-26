@@ -1,11 +1,66 @@
 <script setup>
 import { ref } from 'vue'
-import PhotoPlaceholder from './PhotoPlaceholder.vue'
 
+const props = defineProps({
+  compact: {
+    type: Boolean,
+    default: false,
+  },
+})
+
+const baseUrl = import.meta.env.BASE_URL
 const openPrinciple = ref(null)
 const hoveredPrinciple = ref(null)
 const isPrincipleOpen = (number) =>
   openPrinciple.value === number || hoveredPrinciple.value === number
+
+const facilities = [
+  {
+    image: 'images/fachada-2.webp',
+    width: 1400,
+    height: 788,
+    wide: true,
+    title: 'Acceso principal',
+    caption: 'Sendero de ingreso y placa institucional',
+    alt: 'Sendero de acceso principal y jardines del IAP Veracruz',
+  },
+  {
+    image: 'images/fachada-3.webp',
+    width: 1400,
+    height: 788,
+    wide: true,
+    title: 'Sede y áreas exteriores',
+    caption: 'Instalaciones y jardines del Instituto',
+    alt: 'Vista exterior de la sede y áreas verdes del IAP Veracruz',
+  },
+  {
+    image: 'images/salon-1.webp',
+    width: 1200,
+    height: 900,
+    wide: false,
+    title: 'Sala de seminarios',
+    caption: 'Espacio para conferencias y sesiones académicas',
+    alt: 'Sala de seminarios del IAP Veracruz',
+  },
+  {
+    image: 'images/salon-2.webp',
+    width: 1200,
+    height: 900,
+    wide: false,
+    title: 'Aula equipada',
+    caption: 'Salón con pizarrón y proyección',
+    alt: 'Aula equipada con pizarrón y pantalla de proyección en el IAP Veracruz',
+  },
+  {
+    image: 'images/salon-3.webp',
+    width: 1200,
+    height: 900,
+    wide: false,
+    title: 'Aulas de formación',
+    caption: 'Mobiliario para grupos de posgrado y capacitación',
+    alt: 'Aulas de formación para posgrados y capacitación en el IAP Veracruz',
+  },
+]
 
 const principles = [
   {
@@ -30,18 +85,34 @@ const principles = [
 </script>
 
 <template>
-  <section id="instituto" class="about section-shell">
+  <section id="instituto" class="about section-shell" :class="{ 'about--page': !props.compact }">
     <div class="about-intro">
       <div class="about-copy">
         <p class="section-kicker">Conócenos</p>
         <h2>Profesionalización para mejorar <em>lo público.</em></h2>
         <p class="lead">
-          El Instituto de Administración Pública del Estado de Veracruz, A.C. es una asociación civil fundada en 1978, dedicada a la profesionalización de las personas del sector público y a la mejora de la gestión gubernamental en el estado.
+          El Instituto de Administración Pública del Estado de Veracruz, A.C. es una asociación civil fundada en 1973, dedicada a la profesionalización de las personas del sector público y a la mejora de la gestión gubernamental en el estado.
         </p>
-        <RouterLink class="about-link" to="/contacto">Acércate al Instituto <span class="material-icon" aria-hidden="true">arrow_outward</span></RouterLink>
+        <RouterLink v-if="props.compact" class="about-link" to="/conocenos">
+          Conoce el Instituto, Consejo y sede
+          <span class="material-icon" aria-hidden="true">arrow_outward</span>
+        </RouterLink>
+        <RouterLink v-else class="about-link" to="/contacto">
+          Acércate al Instituto
+          <span class="material-icon" aria-hidden="true">arrow_outward</span>
+        </RouterLink>
       </div>
       <div class="about-photo">
-        <PhotoPlaceholder label="Áreas comunes y recepción" />
+        <figure class="about-photo-frame">
+          <img
+            :src="`${baseUrl}images/area-comun-1.webp`"
+            alt="Área de recepción y sala de espera del IAP Veracruz"
+            width="1200"
+            height="900"
+            loading="lazy"
+            decoding="async"
+          />
+        </figure>
         <span class="photo-index">IAP · VERACRUZ</span>
       </div>
     </div>
@@ -50,9 +121,6 @@ const principles = [
       <div>
         <p class="section-kicker">Nuestro propósito</p>
         <h3>Principios que nos orientan</h3>
-      </div>
-      <div class="principles-photo">
-        <PhotoPlaceholder label="Detalle del logotipo o placa institucional" variant="detail" />
       </div>
     </div>
 
@@ -89,6 +157,37 @@ const principles = [
         <span class="principle-rule" aria-hidden="true"></span>
       </article>
     </div>
+
+    <div v-if="!props.compact" class="facilities">
+      <div class="facilities-heading">
+        <p class="section-kicker">Instalaciones</p>
+        <h3>Espacios para aprender y dialogar</h3>
+      </div>
+
+      <div class="facilities-grid">
+        <figure
+          v-for="item in facilities"
+          :key="item.image"
+          class="facility-card"
+          :class="{ 'facility-card--wide': item.wide }"
+        >
+          <div class="facility-media">
+            <img
+              :src="`${baseUrl}${item.image}`"
+              :alt="item.alt"
+              :width="item.width"
+              :height="item.height"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          <figcaption>
+            <strong>{{ item.title }}</strong>
+            <span>{{ item.caption }}</span>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
   </section>
 </template>
 
@@ -100,6 +199,10 @@ const principles = [
 
 .about {
   padding: 7rem 0 6rem;
+}
+
+.about--page {
+  padding: 4.5rem 0 5.5rem;
 }
 
 .about-intro {
@@ -178,8 +281,20 @@ h2 em {
   content: "";
 }
 
-.about-photo :deep(.photo-placeholder) {
-  min-height: 370px;
+.about-photo-frame {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: var(--color-surface-soft);
+}
+
+.about-photo-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .photo-index {
@@ -206,11 +321,6 @@ h3 {
   font-size: clamp(1.9rem, 3.2vw, 2.7rem);
   font-weight: 400;
   letter-spacing: -0.04em;
-}
-
-.principles-photo :deep(.photo-placeholder) {
-  width: 270px;
-  min-height: 190px;
 }
 
 .principles-grid {
@@ -326,9 +436,97 @@ h3 {
   transform: scaleX(1);
 }
 
+.facilities {
+  margin-top: 5.5rem;
+}
+
+.facilities-heading {
+  margin-bottom: 1.7rem;
+}
+
+.facilities-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.facility-card {
+  grid-column: span 2;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.facility-card--wide {
+  grid-column: span 3;
+}
+
+.facility-media {
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: var(--color-surface-soft);
+}
+
+.facility-card--wide .facility-media {
+  aspect-ratio: 16 / 9;
+}
+
+.facility-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 360ms ease;
+}
+
+.facility-card:hover .facility-media img {
+  transform: scale(1.03);
+}
+
+.facility-card figcaption {
+  display: flex;
+  padding: 0.95rem 1.1rem;
+  flex-direction: column;
+  gap: 0.25rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.facility-card figcaption strong {
+  color: var(--color-green-text);
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 400;
+}
+
+.facility-card figcaption span {
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+  .facilities-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .facility-card,
+  .facility-card--wide {
+    grid-column: auto;
+  }
+
+  .facility-card--wide .facility-media {
+    aspect-ratio: 4 / 3;
+  }
+}
+
 @media (max-width: 760px) {
   .about {
     padding: 5rem 0 4.5rem;
+  }
+
+  .about--page {
+    padding: 3.5rem 0 4rem;
   }
 
   .about-intro {
@@ -342,10 +540,6 @@ h3 {
 
   .about-photo {
     margin-right: 0.8rem;
-  }
-
-  .about-photo :deep(.photo-placeholder) {
-    min-height: 300px;
   }
 
   .principles-heading {
@@ -364,13 +558,12 @@ h3 {
     gap: 0.7rem;
   }
 
-  .principles-photo,
-  .principles-photo :deep(.photo-placeholder) {
-    width: 100%;
+  .facilities {
+    margin-top: 4.5rem;
   }
 
-  .principles-photo :deep(.photo-placeholder) {
-    min-height: 180px;
+  .facilities-grid {
+    grid-template-columns: 1fr;
   }
 
   .principles-grid {

@@ -12,12 +12,17 @@ const props = defineProps({
 })
 
 const program = computed(() => getProgramBySlug(props.slug))
-const listedCredits = computed(() => program.value?.cycles
-  .flatMap((cycle) => cycle.subjects)
-  .reduce((total, subject) => total + subject.credits, 0) ?? 0)
-const hasCreditDiscrepancy = computed(() => program.value?.curriculumTotals
-  ? Math.abs(listedCredits.value - program.value.curriculumTotals.credits) > 0.001
-  : false)
+const numberFormatter = new Intl.NumberFormat('es-MX')
+const formatNumber = (value) => numberFormatter.format(value)
+const totalSubjects = computed(() => program.value?.cycles
+  .reduce((total, cycle) => total + cycle.subjects.length, 0) ?? 0)
+const getCycleHours = (cycle) => cycle.subjects.reduce(
+  (totals, subject) => ({
+    hd: totals.hd + subject.hoursWithInstructor,
+    hi: totals.hi + subject.independentHours,
+  }),
+  { hd: 0, hi: 0 },
+)
 </script>
 
 <template>
@@ -36,7 +41,8 @@ const hasCreditDiscrepancy = computed(() => program.value?.curriculumTotals
         <p class="detail-summary">{{ program.summary }}</p>
         <div class="detail-meta">
           <span><strong>Modalidad</strong>{{ program.modality || 'Por confirmar' }}</span>
-          <span v-if="program.rvoeRequired"><strong>RVOE</strong>Dato oficial por confirmar</span>
+          <span v-if="program.period"><strong>Periodo</strong>{{ program.period }}</span>
+          <span v-if="program.rvoe"><strong>RVOE</strong>{{ program.rvoe }}</span>
         </div>
         <a class="hero-link" href="#novedades">Recibir novedades <span class="material-icon" aria-hidden="true">south</span></a>
       </div>
@@ -73,9 +79,10 @@ const hasCreditDiscrepancy = computed(() => program.value?.curriculumTotals
             <h2>Perfil de egreso</h2>
             <span class="material-icon fact-icon" aria-hidden="true">school</span>
           </div>
-          <ul v-if="program.graduateProfile">
+          <ul v-if="Array.isArray(program.graduateProfile)">
             <li v-for="profile in program.graduateProfile" :key="profile">{{ profile }}</li>
           </ul>
+          <p v-else-if="program.graduateProfile">{{ program.graduateProfile }}</p>
           <p v-else class="pending-copy">El perfil de egreso oficial se publicará cuando sea proporcionado por el Instituto.</p>
         </article>
       </section>
@@ -83,55 +90,68 @@ const hasCreditDiscrepancy = computed(() => program.value?.curriculumTotals
       <section v-if="program.cycles.length" class="curriculum">
         <div class="section-heading">
           <div>
-            <p class="section-kicker">Plan de estudios 2025</p>
+            <p class="section-kicker">{{ program.curriculumTitle || 'Plan de estudios 2025' }}</p>
             <h2>Tira de materias</h2>
           </div>
-          <p>{{ program.cycles.length }} {{ program.cycleUnit || 'ciclos' }} · {{ program.curriculumTotals.credits.toFixed(3) }} créditos</p>
+          <p>{{ program.cycles.length }} {{ program.cycleUnit || 'ciclos' }} · {{ totalSubjects }} asignaturas</p>
         </div>
 
-        <div v-for="cycle in program.cycles" :key="cycle.name" class="cycle">
-          <h3>{{ cycle.name }}</h3>
-          <div class="table-wrap">
-            <table>
-              <colgroup>
-                <col class="subject-column" />
-                <col class="code-column" />
-                <col class="hours-column" />
-                <col class="hours-column" />
-                <col class="credits-column" />
-              </colgroup>
-              <thead>
-                <tr>
-                  <th scope="col">Asignatura</th>
-                  <th scope="col">Clave</th>
-                  <th scope="col">HD</th>
-                  <th scope="col">HI</th>
-                  <th scope="col">Créditos</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="subject in cycle.subjects" :key="subject.code">
-                  <th scope="row">{{ subject.name }}</th>
-                  <td>{{ subject.code }}</td>
-                  <td>{{ subject.hoursWithInstructor }}</td>
-                  <td>{{ subject.independentHours }}</td>
-                  <td>{{ subject.credits.toFixed(3) }}</td>
-                </tr>
-              </tbody>
-            </table>
+        <div class="cycles-grid">
+          <article v-for="(cycle, index) in program.cycles" :key="cycle.name" class="cycle-card">
+            <header class="cycle-card-header">
+              <div class="cycle-title-group">
+                <span class="cycle-index">{{ String(index + 1).padStart(2, '0') }}</span>
+                <h3>{{ cycle.name }}</h3>
+              </div>
+              <span class="cycle-count">{{ cycle.subjects.length }} asignaturas</span>
+            </header>
+
+            <div class="cycle-columns" aria-hidden="true">
+              <span>Asignatura</span>
+              <span>HD</span>
+              <span>HI</span>
+            </div>
+
+            <ul class="subject-list">
+              <li v-for="subject in cycle.subjects" :key="subject.code" class="subject-item">
+                <span class="subject-name">{{ subject.name }}</span>
+                <span class="subject-hour subject-hour--hd" :aria-label="`${subject.hoursWithInstructor} horas con docente`">
+                  {{ subject.hoursWithInstructor }}
+                </span>
+                <span class="subject-hour subject-hour--hi" :aria-label="`${subject.independentHours} horas independientes`">
+                  {{ subject.independentHours }}
+                </span>
+              </li>
+            </ul>
+
+            <footer class="cycle-subtotal">
+              <strong>Subtotal del ciclo</strong>
+              <strong class="subtotal-value subtotal-value--hd" :aria-label="`Subtotal ${getCycleHours(cycle).hd} horas con docente`">
+                {{ formatNumber(getCycleHours(cycle).hd) }}
+              </strong>
+              <strong class="subtotal-value subtotal-value--hi" :aria-label="`Subtotal ${getCycleHours(cycle).hi} horas independientes`">
+                {{ formatNumber(getCycleHours(cycle).hi) }}
+              </strong>
+            </footer>
+          </article>
+        </div>
+
+        <div v-if="program.curriculumTotals" class="curriculum-total">
+          <div class="curriculum-total-label">
+            <strong>Total general del plan</strong>
+            <span>{{ totalSubjects }} asignaturas en {{ program.cycles.length }} {{ program.cycleUnit || 'ciclos' }}</span>
+          </div>
+          <div class="curriculum-total-metrics">
+            <span class="total-pill total-pill--hd">
+              <strong>{{ formatNumber(program.curriculumTotals.hoursWithInstructor) }}</strong>
+              <small>HD</small>
+            </span>
+            <span class="total-pill total-pill--hi">
+              <strong>{{ formatNumber(program.curriculumTotals.independentHours) }}</strong>
+              <small>HI</small>
+            </span>
           </div>
         </div>
-
-        <div class="curriculum-total">
-          <span>Total general indicado</span>
-          <span>{{ program.curriculumTotals.hoursWithInstructor }} HD</span>
-          <span>{{ program.curriculumTotals.independentHours }} HI</span>
-          <strong>{{ program.curriculumTotals.credits.toFixed(3) }} créditos</strong>
-        </div>
-        <p v-if="hasCreditDiscrepancy" class="curriculum-warning" role="note">
-          La suma de los créditos de las asignaturas es {{ listedCredits.toFixed(3) }}, pero el total general del documento indica
-          {{ program.curriculumTotals.credits.toFixed(3) }}. El IAP debe confirmar la cifra oficial.
-        </p>
         <p class="table-legend">
           <span class="legend-hd"><strong>HD:</strong> horas con docente</span>
           <span class="legend-separator" aria-hidden="true">·</span>
@@ -348,97 +368,203 @@ h2 {
   font-size: 0.8rem;
 }
 
-.cycle {
-  margin-top: 1rem;
+.cycles-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.cycle-card {
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--color-border);
+  border-top: 2px solid var(--color-primary);
   background: var(--color-surface);
 }
 
-.cycle h3 {
-  margin: 0;
-  padding: 0.9rem 1rem;
-  color: var(--color-primary-text);
+.cycle-card-header {
+  display: flex;
+  padding: 1rem 1.15rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--color-border);
   background: var(--color-surface-soft);
-  font-size: 1.15rem;
 }
 
-.table-wrap {
-  overflow-x: auto;
+.cycle-title-group {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
 }
 
-table {
-  width: 100%;
-  min-width: 720px;
-  table-layout: fixed;
-  border-collapse: collapse;
-  color: var(--color-ink);
-  font-size: 0.79rem;
-  text-align: left;
+.cycle-index {
+  color: var(--color-secondary-text);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
 }
 
-.subject-column {
-  width: 44%;
+.cycle-card-header h3 {
+  margin: 0;
+  color: var(--color-green-text);
+  font-size: 1.22rem;
+  line-height: 1.2;
 }
 
-.code-column {
-  width: 16%;
+.cycle-count {
+  flex: 0 0 auto;
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  font-weight: 500;
 }
 
-.hours-column {
-  width: 11%;
+.cycle-columns,
+.subject-item,
+.cycle-subtotal {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3.4rem 3.4rem;
+  gap: 0.75rem;
 }
 
-.credits-column {
-  width: 18%;
+.cycle-columns {
+  padding: 0.55rem 1.15rem;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-muted);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
 }
 
-th,
-td {
-  padding: 0.75rem 0.9rem;
+.cycle-columns span:not(:first-child) {
+  text-align: center;
+}
+
+.subject-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.subject-item {
+  padding: 0.72rem 1.15rem;
+  align-items: baseline;
+}
+
+.subject-item + .subject-item {
   border-top: 1px solid var(--color-border);
 }
 
-thead th {
-  color: var(--color-muted);
-  font-size: 0.68rem;
-  font-weight: 700;
-  white-space: nowrap;
+.subject-name {
+  color: var(--color-ink);
+  font-size: 0.86rem;
+  line-height: 1.45;
 }
 
-thead th:not(:first-child),
-tbody td {
+.subject-hour {
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.45;
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
 
-tbody th {
-  min-width: 230px;
-  font-weight: 500;
+.subject-hour--hd {
+  color: var(--color-primary-text);
 }
 
-tbody td {
-  white-space: nowrap;
+.subject-hour--hi {
+  color: var(--color-green-text);
+}
+
+.cycle-subtotal {
+  margin-top: auto;
+  padding: 0.75rem 1.15rem;
+  align-items: center;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface-muted);
+  color: var(--color-green-text);
+  font-size: 0.78rem;
+}
+
+.subtotal-value {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.subtotal-value--hd {
+  color: var(--color-primary-text);
+}
+
+.subtotal-value--hi {
+  color: var(--color-green-text);
 }
 
 .curriculum-total {
   display: flex;
-  margin-top: 1rem;
-  padding: 1rem;
+  margin-top: 1.25rem;
+  padding: 1.1rem 1.25rem;
+  align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  color: var(--color-green-text);
+  gap: 1rem;
+  border: 1px solid var(--color-border);
   background: var(--color-surface-muted);
-  font-size: 0.8rem;
 }
 
-.curriculum-warning {
-  margin: 0.75rem 0 0;
-  padding: 0.85rem 1rem;
-  border-left: 3px solid var(--color-secondary);
-  color: var(--color-warning-ink);
+.curriculum-total-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.curriculum-total-label strong {
+  color: var(--color-green-text);
+  font-size: 0.88rem;
+}
+
+.curriculum-total-label span {
+  color: var(--color-muted);
+  font-size: 0.74rem;
+}
+
+.curriculum-total-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.total-pill {
+  display: inline-flex;
+  min-width: 96px;
+  padding: 0.45rem 0.85rem;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.4rem;
+  border: 1px solid var(--color-border);
+  border-radius: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.total-pill strong {
+  font-size: 1rem;
+}
+
+.total-pill small {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.total-pill--hd {
+  color: var(--color-primary-text);
   background: var(--color-warning-surface);
-  font-size: 0.79rem;
-  line-height: 1.6;
+}
+
+.total-pill--hi {
+  color: var(--color-green-text);
+  background: var(--color-surface);
 }
 
 .table-legend {
@@ -493,6 +619,12 @@ tbody td {
   line-height: 1.7;
 }
 
+@media (max-width: 820px) {
+  .cycles-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 780px) {
   .facts-grid {
     grid-template-columns: 1fr;
@@ -531,8 +663,16 @@ tbody td {
     flex-direction: column;
   }
 
+  .cycle-columns,
+  .subject-item,
+  .cycle-subtotal {
+    grid-template-columns: minmax(0, 1fr) 2.8rem 2.8rem;
+    gap: 0.5rem;
+  }
+
   .curriculum-total {
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 </style>

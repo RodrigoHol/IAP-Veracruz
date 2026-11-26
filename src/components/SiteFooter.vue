@@ -11,7 +11,7 @@ const baseUrl = import.meta.env.BASE_URL
       </RouterLink>
 
       <nav class="footer-nav" aria-label="Navegación del pie de página">
-        <RouterLink :to="{ name: 'home', hash: '#instituto' }">Conócenos</RouterLink>
+        <RouterLink to="/conocenos">Conócenos</RouterLink>
         <RouterLink to="/profesionalizacion">Profesionalización</RouterLink>
         <RouterLink to="/biblioteca">Biblioteca</RouterLink>
         <RouterLink to="/contacto">Contacto</RouterLink>

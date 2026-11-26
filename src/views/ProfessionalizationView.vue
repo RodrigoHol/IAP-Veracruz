@@ -1,7 +1,8 @@
 <script setup>
 import { RouterLink } from 'vue-router'
-import PhotoPlaceholder from '../components/PhotoPlaceholder.vue'
 import { programs } from '../data/programs'
+
+const baseUrl = import.meta.env.BASE_URL
 </script>
 
 <template>
@@ -25,14 +26,21 @@ import { programs } from '../data/programs'
 
       <div class="program-grid">
         <article v-for="(program, index) in programs" :key="program.slug" class="program-card">
-          <span class="program-index">{{ String(index + 1).padStart(2, '0') }}</span>
-          <PhotoPlaceholder
-            v-if="program.slug === 'doctorado' || program.slug === 'maestrias'"
-            class="program-photo"
-            :label="`Sesión académica de ${program.category}`"
-            variant="academic"
-          />
-          <span class="program-type">{{ program.category }}</span>
+          <figure class="program-photo">
+            <img
+              :src="`${baseUrl}${program.image}`"
+              :alt="program.imageAlt"
+              :style="{ objectPosition: program.imagePosition || 'center' }"
+              width="1200"
+              height="900"
+              loading="lazy"
+              decoding="async"
+            />
+          </figure>
+          <div class="program-meta">
+            <span class="program-type">{{ program.category }}</span>
+            <span class="program-index">{{ String(index + 1).padStart(2, '0') }}</span>
+          </div>
           <h3>{{ program.title }}</h3>
           <p>{{ program.summary }}</p>
           <RouterLink :to="{ name: 'program-detail', params: { slug: program.slug } }">
@@ -142,16 +150,37 @@ h2 {
   transform: translateY(-3px);
 }
 
-.program-index {
-  position: absolute;
-  top: 1.5rem;
-  right: 1.6rem;
-  color: #c1a17b;
-  font-size: 1.1rem;
+.program-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
 }
 
-.program-card :deep(.program-photo) {
-  margin: -1.8rem -1.8rem 1.2rem;
+.program-index {
+  color: #c1a17b;
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.program-photo {
+  margin: -1.8rem -1.8rem 1.25rem;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-soft);
+}
+
+.program-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 360ms ease;
+}
+
+.program-card:hover .program-photo img {
+  transform: scale(1.03);
 }
 
 .program-type {

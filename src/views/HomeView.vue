@@ -2,7 +2,6 @@
 import HeroSection from '../components/HeroSection.vue'
 import AdmissionsNotice from '../components/AdmissionsNotice.vue'
 import AboutSection from '../components/AboutSection.vue'
-import OrganigramSection from '../components/OrganigramSection.vue'
 import ProgramsSection from '../components/ProgramsSection.vue'
 import LibrarySection from '../components/LibrarySection.vue'
 </script>
@@ -11,8 +10,7 @@ import LibrarySection from '../components/LibrarySection.vue'
   <div class="home-view">
     <HeroSection />
     <AdmissionsNotice />
-    <AboutSection />
-    <OrganigramSection />
+    <AboutSection compact />
     <ProgramsSection />
     <LibrarySection />
   </div>

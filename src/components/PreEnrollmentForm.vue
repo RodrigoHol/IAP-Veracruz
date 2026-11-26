@@ -9,6 +9,13 @@ defineProps({
 })
 
 const notice = ref('')
+const contactMethod = ref('')
+
+const contactOptions = [
+  { value: 'whatsapp', label: 'WhatsApp', icon: 'chat' },
+  { value: 'correo', label: 'Correo electrónico', icon: 'mail' },
+  { value: 'llamada', label: 'Llamada telefónica', icon: 'call' },
+]
 
 const handleSubmit = () => {
   notice.value = 'Esta vista previa no envía tus datos ni activa una suscripción. Para recibir información oficial, llama al 228 237 0893.'
@@ -56,6 +63,27 @@ const handleSubmit = () => {
         Programa de interés
         <input name="program" :value="programTitle" readonly />
       </label>
+      <fieldset class="contact-preference">
+        <legend>¿Por dónde prefieres que te contactemos?</legend>
+        <div class="contact-options">
+          <label
+            v-for="option in contactOptions"
+            :key="option.value"
+            class="contact-option"
+            :class="{ 'is-selected': contactMethod === option.value }"
+          >
+            <input
+              v-model="contactMethod"
+              type="radio"
+              name="contactMethod"
+              :value="option.value"
+              required
+            />
+            <span class="material-icon" aria-hidden="true">{{ option.icon }}</span>
+            <span>{{ option.label }}</span>
+          </label>
+        </div>
+      </fieldset>
       <button type="submit">Quiero recibir novedades <span class="material-icon" aria-hidden="true">arrow_outward</span></button>
       <p v-if="notice" class="form-notice" role="status">{{ notice }}</p>
     </form>
@@ -135,6 +163,74 @@ input[readonly] {
   background: var(--color-surface-muted);
 }
 
+.contact-preference {
+  grid-column: 1 / -1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.contact-preference legend {
+  margin-bottom: 0.5rem;
+  padding: 0;
+  color: var(--color-green-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.contact-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.contact-option {
+  position: relative;
+  display: flex;
+  min-height: 46px;
+  padding: 0.55rem 0.8rem;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 2px;
+  color: var(--color-ink);
+  background: var(--color-surface);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease;
+}
+
+.contact-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.contact-option:hover {
+  border-color: var(--color-secondary-text);
+}
+
+.contact-option:focus-within {
+  outline: 3px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+.contact-option.is-selected {
+  border-color: var(--color-primary);
+  color: var(--color-primary-text);
+  background: var(--color-surface-soft);
+  font-weight: 700;
+}
+
 button {
   display: inline-flex;
   min-height: 48px;
@@ -172,6 +268,14 @@ button:hover {
 @media (max-width: 540px) {
   .enrollment-form {
     grid-template-columns: 1fr;
+  }
+
+  .contact-options {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-option {
+    justify-content: flex-start;
   }
 }
 </style>

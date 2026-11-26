@@ -61,7 +61,7 @@ const handleProgramFocusOut = (event) => {
 
       <nav id="primary-navigation" class="navigation" :class="{ 'is-open': menuOpen }" aria-label="Navegación principal">
         <RouterLink to="/" @click="closeMenu">Inicio</RouterLink>
-        <RouterLink :to="{ name: 'home', hash: '#instituto' }" @click="closeMenu">Conócenos</RouterLink>
+        <RouterLink to="/conocenos" @click="closeMenu">Conócenos</RouterLink>
         <div
           class="nav-dropdown"
           :class="{ 'is-expanded': programMenuOpen }"
@@ -162,12 +162,13 @@ const handleProgramFocusOut = (event) => {
 }
 
 .header-inner {
-  min-height: 86px;
+  min-height: 108px;
+  gap: 1.5rem;
 }
 
 .brand {
   display: inline-flex;
-  width: 252px;
+  width: 320px;
   flex: 0 0 auto;
   align-items: center;
 }
@@ -185,12 +186,12 @@ const handleProgramFocusOut = (event) => {
 .navigation {
   display: flex;
   align-items: center;
-  gap: clamp(1rem, 2vw, 2rem);
+  gap: clamp(0.9rem, 1.8vw, 1.85rem);
 }
 
 .navigation a {
   color: var(--color-ink);
-  font-size: 0.88rem;
+  font-size: 0.94rem;
   font-weight: 500;
   text-decoration: none;
   transition: color 180ms ease;
@@ -298,8 +299,8 @@ const handleProgramFocusOut = (event) => {
 
 .navigation .nav-cta {
   display: inline-flex;
-  min-height: 46px;
-  padding: 0 1.1rem;
+  min-height: 48px;
+  padding: 0 1.2rem;
   align-items: center;
   gap: 0.7rem;
   border-radius: 3px;
@@ -374,9 +375,13 @@ const handleProgramFocusOut = (event) => {
   }
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1180px) {
+  .header-inner {
+    min-height: 96px;
+  }
+
   .brand {
-    width: 220px;
+    width: 270px;
   }
 
   .menu-toggle {
@@ -491,11 +496,11 @@ const handleProgramFocusOut = (event) => {
   }
 
   .header-inner {
-    min-height: 72px;
+    min-height: 84px;
   }
 
   .brand {
-    width: 190px;
+    width: 225px;
   }
 }
 </style>
