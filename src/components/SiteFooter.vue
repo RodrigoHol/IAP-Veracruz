@@ -1,4 +1,7 @@
 <script setup>
+import SocialIcon from './SocialIcon.vue'
+import { siteInfo, socialLinks } from '../data/site'
+
 const baseUrl = import.meta.env.BASE_URL
 </script>
 
@@ -6,7 +9,7 @@ const baseUrl = import.meta.env.BASE_URL
   <footer class="site-footer">
     <div class="footer-main">
       <RouterLink class="footer-brand" to="/" aria-label="IAP Veracruz, volver al inicio">
-        <img :src="`${baseUrl}images/iap-logo.png`" alt="" />
+        <img :src="`${baseUrl}images/iap-logo.png`" alt="" width="67" height="67" />
         <span>Instituto de<br />Administración Pública<br />de Veracruz</span>
       </RouterLink>
 
@@ -18,42 +21,29 @@ const baseUrl = import.meta.env.BASE_URL
       </nav>
 
       <div class="footer-contact">
-        <p class="footer-contact-note">Atención exclusiva por llamadas telefónicas</p>
-        <a class="footer-phone" href="tel:2282370893" aria-label="Llamar al 228 237 0893">
+        <p class="footer-contact-note">{{ siteInfo.phoneNote }}</p>
+        <a class="footer-phone" :href="siteInfo.phoneHref" :aria-label="`Llamar al ${siteInfo.phoneDisplay}`">
           <span class="material-icon phone-icon" aria-hidden="true">call</span>
-          <span>228 237 0893</span>
+          <span>{{ siteInfo.phoneDisplay }}</span>
         </a>
         <div class="footer-socials">
           <span class="footer-socials-label">Redes oficiales</span>
           <a
+            v-for="social in socialLinks"
+            :key="social.id"
             class="social-link"
-            href="https://www.instagram.com/iap.veracruz?jplx=ZHdheXRvaDd2aW9v"
+            :href="social.href"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Instagram oficial del IAP Veracruz"
+            :aria-label="social.ariaLabel"
           >
-            <svg class="social-icon instagram-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <rect x="3" y="3" width="18" height="18" rx="5" />
-              <circle cx="12" cy="12" r="4" />
-              <circle class="instagram-dot" cx="17.5" cy="6.5" r="1" />
-            </svg>
-          </a>
-          <a
-            class="social-link"
-            href="https://www.facebook.com/IAP.Veracruz.Oficial/"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Facebook oficial del IAP Veracruz"
-          >
-            <svg class="social-icon facebook-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 0C5.373 0 0 5.373 0 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078V12h3.047V9.356c0-3.007 1.792-4.668 4.533-4.668 1.312 0 2.686.234 2.686.234v2.953h-1.513c-1.491 0-1.956.925-1.956 1.874V12h3.328l-.532 3.469h-2.796v8.385C19.612 22.954 24 17.99 24 12c0-6.627-5.373-12-12-12z" />
-            </svg>
+            <SocialIcon :network="social.id" />
           </a>
         </div>
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© {{ new Date().getFullYear() }} Instituto de Administración Pública de Veracruz</span>
+      <span>© {{ new Date().getFullYear() }} {{ siteInfo.shortName }}</span>
       <details class="privacy-disclosure">
         <summary>Aviso de privacidad</summary>
         <p>El aviso oficial se publicará al confirmar su versión institucional.</p>
@@ -184,26 +174,6 @@ const baseUrl = import.meta.env.BASE_URL
   border-color: #e2bf8f;
   color: #e2bf8f;
   background: rgba(255, 255, 255, 0.06);
-}
-
-.social-icon {
-  width: 1rem;
-  height: 1rem;
-}
-
-.instagram-icon {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-}
-
-.instagram-dot {
-  fill: currentColor;
-  stroke: none;
-}
-
-.facebook-icon {
-  fill: currentColor;
 }
 
 .footer-bottom {

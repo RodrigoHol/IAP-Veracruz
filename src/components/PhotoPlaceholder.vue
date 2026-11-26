@@ -187,17 +187,6 @@ defineProps({
   transform-origin: right center;
 }
 
-.photo-placeholder--hero {
-  min-height: 470px;
-  border-radius: 3px;
-  box-shadow: 18px 22px 0 rgba(186, 134, 74, 0.24);
-}
-
-.photo-placeholder--hero .building {
-  bottom: 19%;
-  height: 52%;
-}
-
 .photo-placeholder--library {
   min-height: 310px;
   background:
@@ -217,65 +206,5 @@ defineProps({
     transparent 3%,
     transparent 8%
   );
-}
-
-.photo-placeholder--academic {
-  min-height: 180px;
-  background:
-    linear-gradient(145deg, rgba(24, 51, 47, 0.08), transparent 60%),
-    linear-gradient(180deg, #c9c4b8 0%, #ece5d9 72%, #a69b89 100%);
-}
-
-.photo-placeholder--academic .building-roof {
-  background: var(--color-green);
-}
-
-.photo-placeholder--academic .building-columns {
-  background: repeating-linear-gradient(
-    90deg,
-    transparent 0,
-    transparent 12%,
-    rgba(186, 134, 74, 0.72) 12%,
-    rgba(186, 134, 74, 0.72) 14%,
-    transparent 14%,
-    transparent 25%
-  );
-}
-
-.photo-placeholder--detail {
-  min-height: 190px;
-  background:
-    linear-gradient(145deg, rgba(24, 51, 47, 0.2), transparent 60%),
-    linear-gradient(180deg, #9a6f5f 0%, #e8e1d5 100%);
-}
-
-.photo-placeholder--detail .building {
-  right: 20%;
-  left: 20%;
-  height: 45%;
-}
-
-.photo-placeholder--detail .building-roof {
-  background: var(--color-secondary);
-}
-
-.photo-placeholder--detail .building-columns {
-  right: 18%;
-  left: 18%;
-  background: repeating-linear-gradient(
-    90deg,
-    transparent 0,
-    transparent 18%,
-    rgba(122, 23, 55, 0.6) 18%,
-    rgba(122, 23, 55, 0.6) 21%,
-    transparent 21%,
-    transparent 38%
-  );
-}
-
-@media (max-width: 760px) {
-  .photo-placeholder--hero {
-    min-height: 340px;
-  }
 }
 </style>

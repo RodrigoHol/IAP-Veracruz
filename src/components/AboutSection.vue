@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import { facilities, principles } from '../data/institution'
 
 const props = defineProps({
   compact: {
@@ -13,75 +14,6 @@ const openPrinciple = ref(null)
 const hoveredPrinciple = ref(null)
 const isPrincipleOpen = (number) =>
   openPrinciple.value === number || hoveredPrinciple.value === number
-
-const facilities = [
-  {
-    image: 'images/fachada-2.webp',
-    width: 1400,
-    height: 788,
-    wide: true,
-    title: 'Acceso principal',
-    caption: 'Sendero de ingreso y placa institucional',
-    alt: 'Sendero de acceso principal y jardines del IAP Veracruz',
-  },
-  {
-    image: 'images/fachada-3.webp',
-    width: 1400,
-    height: 788,
-    wide: true,
-    title: 'Sede y áreas exteriores',
-    caption: 'Instalaciones y jardines del Instituto',
-    alt: 'Vista exterior de la sede y áreas verdes del IAP Veracruz',
-  },
-  {
-    image: 'images/salon-1.webp',
-    width: 1200,
-    height: 900,
-    wide: false,
-    title: 'Sala de seminarios',
-    caption: 'Espacio para conferencias y sesiones académicas',
-    alt: 'Sala de seminarios del IAP Veracruz',
-  },
-  {
-    image: 'images/salon-2.webp',
-    width: 1200,
-    height: 900,
-    wide: false,
-    title: 'Aula equipada',
-    caption: 'Salón con pizarrón y proyección',
-    alt: 'Aula equipada con pizarrón y pantalla de proyección en el IAP Veracruz',
-  },
-  {
-    image: 'images/salon-3.webp',
-    width: 1200,
-    height: 900,
-    wide: false,
-    title: 'Aulas de formación',
-    caption: 'Mobiliario para grupos de posgrado y capacitación',
-    alt: 'Aulas de formación para posgrados y capacitación en el IAP Veracruz',
-  },
-]
-
-const principles = [
-  {
-    number: '01',
-    title: 'Misión',
-    icon: 'flag',
-    description: 'Profesionalizar el servicio público mediante conocimiento, formación y compromiso con la sociedad.',
-  },
-  {
-    number: '02',
-    title: 'Visión',
-    icon: 'visibility',
-    description: 'Ser un referente en la preparación de personas capaces de generar valor público en Veracruz.',
-  },
-  {
-    number: '03',
-    title: 'Valores',
-    icon: 'verified_user',
-    description: 'Ética pública, transparencia, responsabilidad y vocación de servicio como guía cotidiana.',
-  },
-]
 </script>
 
 <template>
@@ -353,14 +285,6 @@ h3 {
   background: transparent;
   cursor: pointer;
   text-align: left;
-}
-
-.principle-number {
-  grid-column: 1 / -1;
-  color: var(--color-secondary-text);
-  font-size: 0.69rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
 }
 
 .principle-title {

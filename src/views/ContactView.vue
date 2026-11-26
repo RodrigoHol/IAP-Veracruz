@@ -1,3 +1,8 @@
+<script setup>
+import SocialIcon from '../components/SocialIcon.vue'
+import { siteInfo, socialLinks } from '../data/site'
+</script>
+
 <template>
   <div class="page">
     <header class="contact-hero">
@@ -15,8 +20,10 @@
             <span class="material-icon contact-icon" aria-hidden="true">call</span>
             <span class="card-label">Teléfono</span>
           </div>
-          <a href="tel:2282370893" class="phone" aria-label="Llamar al 228 237 0893">228 237 0893</a>
-          <p>Atención exclusiva por llamadas telefónicas.</p>
+          <a :href="siteInfo.phoneHref" class="phone" :aria-label="`Llamar al ${siteInfo.phoneDisplay}`">
+            {{ siteInfo.phoneDisplay }}
+          </a>
+          <p>{{ siteInfo.phoneNote }}.</p>
         </section>
         <section class="contact-card">
           <div class="contact-card-heading">
@@ -24,12 +31,12 @@
             <span class="card-label">Visítanos</span>
           </div>
           <address>
-            Colmerillo No. 3, Nuevo Xalapa,<br />
-            91097 Xalapa-Enríquez, Veracruz.
+            {{ siteInfo.addressLines[0] }}<br />
+            {{ siteInfo.addressLines[1] }}
           </address>
           <a
             class="directions-link"
-            href="https://www.google.com/maps/search/?api=1&query=Colmerillo+No.+3%2C+Nuevo+Xalapa%2C+91097+Xalapa-Enr%C3%ADquez%2C+Veracruz"
+            :href="siteInfo.mapsDirectionsUrl"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -45,31 +52,16 @@
           <p>Síguenos en nuestras cuentas oficiales.</p>
           <div class="contact-socials">
             <a
+              v-for="social in socialLinks"
+              :key="social.id"
               class="contact-social-link"
-              href="https://www.instagram.com/iap.veracruz?jplx=ZHdheXRvaDd2aW9v"
+              :href="social.href"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Instagram oficial del IAP Veracruz"
+              :aria-label="social.ariaLabel"
             >
-              <svg class="contact-social-icon instagram-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="3" y="3" width="18" height="18" rx="5" />
-                <circle cx="12" cy="12" r="4" />
-                <circle class="instagram-dot" cx="17.5" cy="6.5" r="1" />
-              </svg>
-              <span>Instagram</span>
-              <span class="material-icon social-arrow" aria-hidden="true">arrow_outward</span>
-            </a>
-            <a
-              class="contact-social-link"
-              href="https://www.facebook.com/IAP.Veracruz.Oficial/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Facebook oficial del IAP Veracruz"
-            >
-              <svg class="contact-social-icon facebook-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 0C5.373 0 0 5.373 0 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078V12h3.047V9.356c0-3.007 1.792-4.668 4.533-4.668 1.312 0 2.686.234 2.686.234v2.953h-1.513c-1.491 0-1.956.925-1.956 1.874V12h3.328l-.532 3.469h-2.796v8.385C19.612 22.954 24 17.99 24 12c0-6.627-5.373-12-12-12z" />
-              </svg>
-              <span>Facebook</span>
+              <SocialIcon :network="social.id" />
+              <span>{{ social.label }}</span>
               <span class="material-icon social-arrow" aria-hidden="true">arrow_outward</span>
             </a>
           </div>
@@ -85,13 +77,14 @@
               <h2 id="map-title">Cómo llegar al IAP</h2>
             </div>
           </div>
-          <span>Xalapa-Enríquez, Veracruz</span>
+          <span>{{ siteInfo.city }}</span>
         </div>
         <iframe
-          title="Mapa de Google Maps: Colmerillo No. 3, Nuevo Xalapa, Xalapa-Enríquez, Veracruz"
-          src="https://maps.google.com/maps?q=Colmerillo%20No.%203%2C%20Nuevo%20Xalapa%2C%2091097%20Xalapa-Enr%C3%ADquez%2C%20Veracruz&output=embed"
+          :title="`Mapa de Google Maps: ${siteInfo.addressLines.join(' ')}`"
+          :src="siteInfo.mapsEmbedUrl"
           loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade"
+          referrerpolicy="no-referrer"
+          sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
           allowfullscreen
         ></iframe>
       </section>
@@ -259,27 +252,6 @@ address {
   border-color: var(--color-secondary-text);
   color: var(--color-primary-text);
   background: var(--color-surface-soft);
-}
-
-.contact-social-icon {
-  width: 1rem;
-  height: 1rem;
-  flex: 0 0 auto;
-}
-
-.instagram-icon {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-}
-
-.instagram-dot {
-  fill: currentColor;
-  stroke: none;
-}
-
-.facebook-icon {
-  fill: currentColor;
 }
 
 .social-arrow {

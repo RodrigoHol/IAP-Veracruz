@@ -1,12 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { getProgramBySlug } from '../data/programs'
 import HomeView from '../views/HomeView.vue'
-import AboutView from '../views/AboutView.vue'
-import ProfessionalizationView from '../views/ProfessionalizationView.vue'
-import ProgramDetailView from '../views/ProgramDetailView.vue'
-import LibraryView from '../views/LibraryView.vue'
-import ContactView from '../views/ContactView.vue'
-import NotFoundView from '../views/NotFoundView.vue'
+
+const AboutView = () => import('../views/AboutView.vue')
+const ProfessionalizationView = () => import('../views/ProfessionalizationView.vue')
+const ProgramDetailView = () => import('../views/ProgramDetailView.vue')
+const LibraryView = () => import('../views/LibraryView.vue')
+const ContactView = () => import('../views/ContactView.vue')
+const NotFoundView = () => import('../views/NotFoundView.vue')
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -18,15 +19,26 @@ const router = createRouter({
   routes: [
     { path: '/', name: 'home', component: HomeView, meta: { title: 'Inicio' } },
     { path: '/conocenos', name: 'about', component: AboutView, meta: { title: 'Conócenos' } },
-    { path: '/profesionalizacion', name: 'professionalization', component: ProfessionalizationView, meta: { title: 'Profesionalización' } },
-    { path: '/profesionalizacion/cursos', redirect: { name: 'program-detail', params: { slug: 'microcredenciales' } } },
+    {
+      path: '/profesionalizacion',
+      name: 'professionalization',
+      component: ProfessionalizationView,
+      meta: { title: 'Profesionalización' },
+    },
+    {
+      path: '/profesionalizacion/cursos',
+      redirect: { name: 'program-detail', params: { slug: 'microcredenciales' } },
+    },
     {
       path: '/profesionalizacion/:slug',
       name: 'program-detail',
       component: ProgramDetailView,
       props: true,
       meta: { title: 'Programa académico' },
-      beforeEnter: (to) => getProgramBySlug(to.params.slug) ? true : { name: 'not-found' },
+      beforeEnter: (to) =>
+        typeof to.params.slug === 'string' && getProgramBySlug(to.params.slug)
+          ? true
+          : { name: 'not-found' },
     },
     { path: '/biblioteca', name: 'library', component: LibraryView, meta: { title: 'Biblioteca virtual' } },
     { path: '/contacto', name: 'contact', component: ContactView, meta: { title: 'Contacto' } },

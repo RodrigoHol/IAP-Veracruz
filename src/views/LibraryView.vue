@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import PhotoPlaceholder from '../components/PhotoPlaceholder.vue'
+import { sanitizeExternalUrl, sanitizeText } from '../utils/security'
 
 const searchQuery = ref('')
 const selectedTopic = ref('Todos')
@@ -8,12 +9,17 @@ const topics = ['Todos', 'Administración Pública', 'Gestión Municipal', 'Dere
 const publications = []
 
 const filteredPublications = computed(() => {
-  const query = searchQuery.value.trim().toLocaleLowerCase('es-MX')
-  return publications.filter((publication) => {
-    const matchesTopic = selectedTopic.value === 'Todos' || publication.topic === selectedTopic.value
-    const matchesQuery = !query || `${publication.title} ${publication.author}`.toLocaleLowerCase('es-MX').includes(query)
-    return matchesTopic && matchesQuery
-  })
+  const query = sanitizeText(searchQuery.value, 120).toLocaleLowerCase('es-MX')
+  return publications
+    .filter((publication) => {
+      const matchesTopic = selectedTopic.value === 'Todos' || publication.topic === selectedTopic.value
+      const matchesQuery = !query || `${publication.title} ${publication.author}`.toLocaleLowerCase('es-MX').includes(query)
+      return matchesTopic && matchesQuery
+    })
+    .map((publication) => ({
+      ...publication,
+      safePdf: sanitizeExternalUrl(publication.pdf),
+    }))
 })
 </script>
 
@@ -43,7 +49,7 @@ const filteredPublications = computed(() => {
         <label class="search-field">
           <span class="visually-hidden">Buscar por título o autor</span>
           <span class="material-icon search-icon" aria-hidden="true">search</span>
-          <input v-model="searchQuery" type="search" placeholder="Buscar por título o autor" />
+          <input v-model="searchQuery" type="search" maxlength="120" placeholder="Buscar por título o autor" />
         </label>
         <label class="topic-select">
           <span class="visually-hidden">Filtrar por eje temático</span>
@@ -55,11 +61,11 @@ const filteredPublications = computed(() => {
 
       <div v-if="filteredPublications.length" class="publication-grid">
         <article v-for="publication in filteredPublications" :key="publication.title" class="publication-card">
-          <img :src="publication.cover" :alt="`Portada de ${publication.title}`" />
+          <img :src="publication.cover" :alt="`Portada de ${publication.title}`" loading="lazy" decoding="async" />
           <span>{{ publication.topic }} · {{ publication.year }}</span>
           <h3>{{ publication.title }}</h3>
           <p>{{ publication.author }}</p>
-          <a :href="publication.pdf" target="_blank" rel="noopener noreferrer">Consultar publicación <span class="material-icon" aria-hidden="true">arrow_outward</span></a>
+          <a v-if="publication.safePdf" :href="publication.safePdf" target="_blank" rel="noopener noreferrer">Consultar publicación <span class="material-icon" aria-hidden="true">arrow_outward</span></a>
         </article>
       </div>
 
@@ -209,16 +215,6 @@ select {
 .topic-select select {
   width: 100%;
   height: 44px;
-}
-
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  clip-path: inset(50%);
 }
 
 .catalog-empty {

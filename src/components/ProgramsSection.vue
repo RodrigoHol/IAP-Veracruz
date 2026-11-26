@@ -199,20 +199,6 @@ h2 em {
   text-transform: uppercase;
 }
 
-.program-number {
-  color: var(--color-secondary-text);
-  font-size: 1.15rem;
-}
-
-.program-category {
-  margin-top: 1.4rem;
-  color: var(--color-primary-text);
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
 h3 {
   margin: 0.15rem 0 0.65rem;
   color: var(--color-green-text);

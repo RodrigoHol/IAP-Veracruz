@@ -1,28 +1,10 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import { heroSlides } from '../data/institution'
 
 const baseUrl = import.meta.env.BASE_URL
 const AUTOPLAY_MS = 20000
-
-const heroSlides = [
-  {
-    image: 'images/fachada-1.webp',
-    alt: 'Fachada principal del Instituto de Administración Pública de Veracruz',
-    width: 1600,
-    height: 900,
-    position: '50% 25%',
-    label: 'Fachada principal del IAP',
-  },
-  {
-    image: 'images/area-comun-2.webp',
-    alt: 'Jardín de acceso y placa institucional inaugural del IAP Veracruz',
-    width: 1200,
-    height: 900,
-    position: '55% 55%',
-    label: 'Acceso y placa institucional',
-  },
-]
 
 const activeIndex = ref(0)
 let rotationTimer = null

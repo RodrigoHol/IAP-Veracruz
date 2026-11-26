@@ -1,19 +1,13 @@
 <script setup>
 import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useTheme } from '../composables/useTheme'
 import { programs } from '../data/programs'
 
 const baseUrl = import.meta.env.BASE_URL
 const menuOpen = ref(false)
 const programMenuOpen = ref(false)
-const isDarkMode = ref(document.documentElement.dataset.theme === 'dark')
-
-const toggleTheme = () => {
-  isDarkMode.value = !isDarkMode.value
-  const theme = isDarkMode.value ? 'dark' : 'light'
-  document.documentElement.dataset.theme = theme
-  localStorage.setItem('iap-theme', theme)
-}
+const { isDarkMode, toggleTheme } = useTheme()
 
 const closeMenu = () => {
   menuOpen.value = false
@@ -128,28 +122,12 @@ const handleProgramFocusOut = (event) => {
 </template>
 
 <style scoped>
-.utility-bar {
-  color: #f7f3ed;
-  background: var(--color-green);
-  font-size: 0.72rem;
-  letter-spacing: 0.045em;
-}
-
-.utility-inner,
 .header-inner {
   display: flex;
   width: min(var(--content-width), calc(100% - 3rem));
   margin: 0 auto;
   align-items: center;
   justify-content: space-between;
-}
-
-.utility-inner {
-  min-height: 34px;
-}
-
-.utility-motto {
-  color: #d9c8b2;
 }
 
 .site-header {
@@ -481,21 +459,8 @@ const handleProgramFocusOut = (event) => {
 }
 
 @media (max-width: 560px) {
-  .utility-inner,
   .header-inner {
     width: calc(100% - 2rem);
-  }
-
-  .utility-inner {
-    min-height: 31px;
-    font-size: 0.62rem;
-  }
-
-  .utility-motto {
-    display: none;
-  }
-
-  .header-inner {
     min-height: 84px;
   }
 

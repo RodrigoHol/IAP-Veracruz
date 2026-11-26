@@ -1,5 +1,13 @@
 <script setup>
-import { ref } from 'vue'
+import { reactive, ref } from 'vue'
+import { siteInfo } from '../data/site'
+import {
+  CONTACT_OPTIONS,
+  EDUCATION_OPTIONS,
+  FIELD_LIMITS,
+  SUBMIT_COOLDOWN_MS,
+  validatePreEnrollmentForm,
+} from '../utils/formValidation'
 
 defineProps({
   programTitle: {
@@ -8,17 +16,60 @@ defineProps({
   },
 })
 
-const notice = ref('')
-const contactMethod = ref('')
+const form = reactive({
+  name: '',
+  email: '',
+  phone: '',
+  agency: '',
+  education: '',
+  contactMethod: '',
+  website: '',
+})
 
-const contactOptions = [
-  { value: 'whatsapp', label: 'WhatsApp', icon: 'chat' },
-  { value: 'correo', label: 'Correo electrónico', icon: 'mail' },
-  { value: 'llamada', label: 'Llamada telefónica', icon: 'call' },
-]
+const errors = ref({})
+const notice = ref('')
+const noticeType = ref('info')
+const lastSubmitAt = ref(0)
+
+const demoMessage = `Esta vista previa no envía tus datos ni activa una suscripción. Para recibir información oficial, llama al ${siteInfo.phoneDisplay}.`
+
+const clearFieldError = (field) => {
+  if (errors.value[field]) {
+    const nextErrors = { ...errors.value }
+    delete nextErrors[field]
+    errors.value = nextErrors
+  }
+}
 
 const handleSubmit = () => {
-  notice.value = 'Esta vista previa no envía tus datos ni activa una suscripción. Para recibir información oficial, llama al 228 237 0893.'
+  const now = Date.now()
+  if (now - lastSubmitAt.value < SUBMIT_COOLDOWN_MS) {
+    noticeType.value = 'error'
+    notice.value = 'Espera unos segundos antes de intentar nuevamente.'
+    return
+  }
+
+  const result = validatePreEnrollmentForm(form)
+
+  if (result.isBot) {
+    lastSubmitAt.value = now
+    errors.value = {}
+    noticeType.value = 'info'
+    notice.value = demoMessage
+    return
+  }
+
+  if (!result.valid) {
+    errors.value = result.errors
+    noticeType.value = 'error'
+    notice.value = 'Revisa los campos marcados antes de continuar.'
+    return
+  }
+
+  lastSubmitAt.value = now
+  errors.value = {}
+  noticeType.value = 'info'
+  notice.value = demoMessage
 }
 </script>
 
@@ -31,61 +82,133 @@ const handleSubmit = () => {
       <p class="privacy-note">Esta versión de demostración no envía ni almacena datos. No ingreses información personal.</p>
     </div>
 
-    <form class="enrollment-form" @submit.prevent="handleSubmit">
+    <form class="enrollment-form" novalidate @submit.prevent="handleSubmit">
+      <div class="hp-field" aria-hidden="true">
+        <label>
+          Sitio web
+          <input v-model="form.website" name="website" type="text" tabindex="-1" autocomplete="off" />
+        </label>
+      </div>
+
       <label>
         Nombre completo
-        <input name="name" autocomplete="name" required />
+        <input
+          v-model="form.name"
+          name="name"
+          autocomplete="name"
+          :maxlength="FIELD_LIMITS.name"
+          :aria-invalid="Boolean(errors.name)"
+          :aria-describedby="errors.name ? 'error-name' : undefined"
+          required
+          @input="clearFieldError('name')"
+        />
+        <span v-if="errors.name" id="error-name" class="field-error" role="alert">{{ errors.name }}</span>
       </label>
+
       <label>
         Correo electrónico
-        <input name="email" type="email" autocomplete="email" required />
+        <input
+          v-model="form.email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          :maxlength="FIELD_LIMITS.email"
+          :aria-invalid="Boolean(errors.email)"
+          :aria-describedby="errors.email ? 'error-email' : undefined"
+          required
+          @input="clearFieldError('email')"
+        />
+        <span v-if="errors.email" id="error-email" class="field-error" role="alert">{{ errors.email }}</span>
       </label>
+
       <label>
         Teléfono
-        <input name="phone" type="tel" autocomplete="tel" required />
+        <input
+          v-model="form.phone"
+          name="phone"
+          type="tel"
+          autocomplete="tel"
+          :maxlength="FIELD_LIMITS.phone"
+          :aria-invalid="Boolean(errors.phone)"
+          :aria-describedby="errors.phone ? 'error-phone' : undefined"
+          required
+          @input="clearFieldError('phone')"
+        />
+        <span v-if="errors.phone" id="error-phone" class="field-error" role="alert">{{ errors.phone }}</span>
       </label>
+
       <label>
         Dependencia de procedencia
-        <input name="agency" autocomplete="organization" required />
+        <input
+          v-model="form.agency"
+          name="agency"
+          autocomplete="organization"
+          :maxlength="FIELD_LIMITS.agency"
+          :aria-invalid="Boolean(errors.agency)"
+          :aria-describedby="errors.agency ? 'error-agency' : undefined"
+          required
+          @input="clearFieldError('agency')"
+        />
+        <span v-if="errors.agency" id="error-agency" class="field-error" role="alert">{{ errors.agency }}</span>
       </label>
+
       <label>
         Grado de estudios
-        <select name="education" required>
-          <option value="" disabled selected>Selecciona una opción</option>
-          <option>Licenciatura</option>
-          <option>Especialidad</option>
-          <option>Maestría</option>
-          <option>Doctorado</option>
-          <option>Otro</option>
+        <select
+          v-model="form.education"
+          name="education"
+          :aria-invalid="Boolean(errors.education)"
+          :aria-describedby="errors.education ? 'error-education' : undefined"
+          required
+          @change="clearFieldError('education')"
+        >
+          <option value="" disabled>Selecciona una opción</option>
+          <option v-for="option in EDUCATION_OPTIONS" :key="option" :value="option">
+            {{ option }}
+          </option>
         </select>
+        <span v-if="errors.education" id="error-education" class="field-error" role="alert">{{ errors.education }}</span>
       </label>
+
       <label>
         Programa de interés
         <input name="program" :value="programTitle" readonly />
       </label>
-      <fieldset class="contact-preference">
+
+      <fieldset
+        class="contact-preference"
+        :aria-invalid="Boolean(errors.contactMethod)"
+        :aria-describedby="errors.contactMethod ? 'error-contact-method' : undefined"
+      >
         <legend>¿Por dónde prefieres que te contactemos?</legend>
         <div class="contact-options">
           <label
-            v-for="option in contactOptions"
+            v-for="option in CONTACT_OPTIONS"
             :key="option.value"
             class="contact-option"
-            :class="{ 'is-selected': contactMethod === option.value }"
+            :class="{ 'is-selected': form.contactMethod === option.value }"
           >
             <input
-              v-model="contactMethod"
+              v-model="form.contactMethod"
               type="radio"
               name="contactMethod"
               :value="option.value"
               required
+              @change="clearFieldError('contactMethod')"
             />
             <span class="material-icon" aria-hidden="true">{{ option.icon }}</span>
             <span>{{ option.label }}</span>
           </label>
         </div>
+        <span v-if="errors.contactMethod" id="error-contact-method" class="field-error" role="alert">
+          {{ errors.contactMethod }}
+        </span>
       </fieldset>
+
       <button type="submit">Quiero recibir novedades <span class="material-icon" aria-hidden="true">arrow_outward</span></button>
-      <p v-if="notice" class="form-notice" role="status">{{ notice }}</p>
+      <p v-if="notice" class="form-notice" :class="{ 'is-error': noticeType === 'error' }" role="status">
+        {{ notice }}
+      </p>
     </form>
   </section>
 </template>
@@ -136,6 +259,16 @@ h2 {
   gap: 1rem;
 }
 
+.hp-field {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
 label {
   display: flex;
   flex-direction: column;
@@ -158,9 +291,21 @@ select {
   font-weight: 400;
 }
 
+input[aria-invalid="true"],
+select[aria-invalid="true"] {
+  border-color: var(--color-primary);
+}
+
 input[readonly] {
   color: var(--color-muted);
   background: var(--color-surface-muted);
+}
+
+.field-error {
+  color: var(--color-primary-text);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .contact-preference {
@@ -231,6 +376,11 @@ input[readonly] {
   font-weight: 700;
 }
 
+.contact-preference .field-error {
+  display: block;
+  margin-top: 0.45rem;
+}
+
 button {
   display: inline-flex;
   min-height: 48px;
@@ -256,6 +406,11 @@ button:hover {
   color: var(--color-green-text);
   font-size: 0.75rem;
   line-height: 1.5;
+}
+
+.form-notice.is-error {
+  color: var(--color-primary-text);
+  font-weight: 600;
 }
 
 @media (max-width: 760px) {

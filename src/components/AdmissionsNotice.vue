@@ -1,41 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
-
-const notices = [
-  {
-    id: 'admissions',
-    category: 'Admisiones',
-    kicker: 'Fechas de inscripción',
-    title: 'Prepárate para tu siguiente etapa profesional.',
-    description: 'Las fechas de la próxima convocatoria se publicarán cuando el calendario oficial esté disponible.',
-    statusLabel: 'Próxima convocatoria',
-    statusValue: 'Próximamente',
-    linkLabel: 'Llamar para informes',
-    linkTo: '/contacto',
-  },
-  {
-    id: 'general',
-    category: 'Avisos generales',
-    kicker: 'Información institucional',
-    title: 'Avisos del Instituto',
-    description: 'En este espacio encontrarás comunicados, fechas importantes y avisos generales del IAP Veracruz.',
-    statusLabel: 'Información',
-    statusValue: 'Se publicará aquí',
-    linkLabel: 'Visitar redes oficiales',
-    linkTo: '/contacto',
-  },
-  {
-    id: 'news',
-    category: 'Noticias',
-    kicker: 'Actualizaciones',
-    title: 'Novedades para la comunidad',
-    description: 'Aquí se compartirán noticias sobre programas, actividades y servicios del Instituto.',
-    statusLabel: 'Novedades',
-    statusValue: 'Próximamente',
-    linkLabel: 'Explorar oferta académica',
-    linkTo: '/profesionalizacion',
-  },
-]
+import { admissionsNotices as notices } from '../data/institution'
 
 const activeIndex = ref(0)
 const activeNotice = computed(() => notices[activeIndex.value])

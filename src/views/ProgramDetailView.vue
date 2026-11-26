@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { getProgramBySlug } from '../data/programs'
+import { formatNumber, getCycleHours, getTotalSubjects } from '../utils/curriculum'
 import PreEnrollmentForm from '../components/PreEnrollmentForm.vue'
 
 const props = defineProps({
@@ -12,17 +13,7 @@ const props = defineProps({
 })
 
 const program = computed(() => getProgramBySlug(props.slug))
-const numberFormatter = new Intl.NumberFormat('es-MX')
-const formatNumber = (value) => numberFormatter.format(value)
-const totalSubjects = computed(() => program.value?.cycles
-  .reduce((total, cycle) => total + cycle.subjects.length, 0) ?? 0)
-const getCycleHours = (cycle) => cycle.subjects.reduce(
-  (totals, subject) => ({
-    hd: totals.hd + subject.hoursWithInstructor,
-    hi: totals.hi + subject.independentHours,
-  }),
-  { hd: 0, hi: 0 },
-)
+const totalSubjects = computed(() => getTotalSubjects(program.value?.cycles))
 </script>
 
 <template>
@@ -165,7 +156,7 @@ const getCycleHours = (cycle) => cycle.subjects.reduce(
         <p>El temario, los perfiles y la duración de este tipo de oferta se publicarán cuando el IAP confirme sus programas vigentes.</p>
       </section>
 
-      <PreEnrollmentForm :program-title="program.title" />
+      <PreEnrollmentForm :key="program.slug" :program-title="program.title" />
     </section>
   </div>
 </template>
