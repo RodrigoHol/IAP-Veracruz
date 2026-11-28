@@ -12,6 +12,11 @@ import {
   FIELD_LIMITS,
   validatePreEnrollmentForm,
 } from '../src/utils/formValidation.js'
+import {
+  buildSubmissionPayload,
+  isValidGoogleScriptUrl,
+  submitToGoogleSheets,
+} from '../src/utils/formSubmission.js'
 
 const validPayload = {
   name: 'María José Hernández López',
@@ -135,4 +140,72 @@ test('validatePreEnrollmentForm respeta límites máximos y rechaza entradas vac
   assert.equal(oversized.valid, true)
   assert.equal(oversized.sanitized.name.length, FIELD_LIMITS.name)
   assert.equal(oversized.sanitized.agency.length, FIELD_LIMITS.agency)
+})
+
+test('isValidGoogleScriptUrl solo acepta URLs /exec de Google Apps Script', () => {
+  const validUrl = 'https://script.google.com/macros/s/AKfycbx1234567890abcdefGHIJKL/exec'
+  assert.equal(isValidGoogleScriptUrl(`  ${validUrl}  `), validUrl)
+
+  const invalidUrls = [
+    '',
+    null,
+    'https://script.google.com/macros/s/REEMPLAZAR_CON_TU_ID/exec',
+    'http://script.google.com/macros/s/AKfycbx1234567890abcdefGHIJKL/exec',
+    'https://evil.example.com/macros/s/AKfycbx1234567890abcdefGHIJKL/exec',
+    'https://script.google.com/macros/s/AKfycbx1234567890abcdefGHIJKL/dev',
+    'https://script.google.com/macros/s/corto/exec',
+  ]
+
+  for (const url of invalidUrls) {
+    assert.equal(isValidGoogleScriptUrl(url), null, `Debió rechazar URL: ${url}`)
+  }
+})
+
+test('submitToGoogleSheets maneja endpoint sin configurar, éxito JSON y errores de red', async () => {
+  const validation = validatePreEnrollmentForm(validPayload)
+  const payload = buildSubmissionPayload(validation.sanitized, {
+    programTitle: 'Maestría en Administración Pública',
+    requestCurriculum: true,
+  })
+
+  assert.equal(payload.contactMethod, 'WhatsApp')
+  assert.equal(payload.requestType, 'Plan de estudios e informes')
+
+  const unconfigured = await submitToGoogleSheets(payload, { endpointUrl: '' })
+  assert.deepEqual(unconfigured, { ok: false, reason: 'unconfigured' })
+
+  const validUrl = 'https://script.google.com/macros/s/AKfycbx1234567890abcdefGHIJKL/exec'
+  let capturedRequest = null
+  const okResult = await submitToGoogleSheets(payload, {
+    endpointUrl: validUrl,
+    fetchImpl: async (url, options) => {
+      capturedRequest = { url, options }
+      return {
+        ok: true,
+        json: async () => ({ ok: true }),
+      }
+    },
+  })
+
+  assert.deepEqual(okResult, { ok: true, reason: null })
+  assert.equal(capturedRequest.url, validUrl)
+  assert.equal(capturedRequest.options.method, 'POST')
+  assert.equal(capturedRequest.options.headers['Content-Type'], 'text/plain;charset=utf-8')
+
+  const rejectedResult = await submitToGoogleSheets(payload, {
+    endpointUrl: validUrl,
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({ ok: false, error: 'validation_error' }),
+    }),
+  })
+  assert.deepEqual(rejectedResult, { ok: false, reason: 'validation_error' })
+
+  const networkErrorResult = await submitToGoogleSheets(payload, {
+    endpointUrl: validUrl,
+    fetchImpl: async () => {
+      throw new Error('Network down')
+    },
+  })
+  assert.deepEqual(networkErrorResult, { ok: false, reason: 'network_error' })
 })

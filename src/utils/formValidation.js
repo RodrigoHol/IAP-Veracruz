@@ -10,6 +10,7 @@ export const FIELD_LIMITS = {
   email: 150,
   phone: 20,
   agency: 150,
+  program: 120,
 }
 
 export const EDUCATION_OPTIONS = [
@@ -48,6 +49,14 @@ export const validatePreEnrollmentForm = (rawInput = {}) => {
   }
 
   const errors = {}
+
+  if (rawInput.program !== undefined) {
+    const sanitizedProgram = sanitizeText(rawInput.program ?? '', FIELD_LIMITS.program)
+    if (containsUnsafeMarkup(sanitizedProgram)) {
+      errors.program = 'El programa seleccionado no es válido.'
+    }
+    sanitized.program = sanitizedProgram
+  }
 
   if (!sanitized.name || sanitized.name.length < 2) {
     errors.name = 'Ingresa tu nombre completo.'

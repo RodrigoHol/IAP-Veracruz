@@ -11,7 +11,7 @@ const baseUrl = import.meta.env.BASE_URL
       <div class="page-shell">
         <p class="eyebrow">Formación para el servicio público</p>
         <h1>Profesionalización</h1>
-        <p>Conoce las rutas de formación disponibles y consulta los planes académicos publicados por el IAP Veracruz.</p>
+        <p>Conoce las rutas de formación disponibles y solicita información académica sobre los programas del IAP Veracruz.</p>
       </div>
     </header>
 

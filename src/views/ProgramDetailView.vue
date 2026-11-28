@@ -13,7 +13,11 @@ const props = defineProps({
 })
 
 const program = computed(() => getProgramBySlug(props.slug))
-const totalSubjects = computed(() => getTotalSubjects(program.value?.cycles))
+const cycleCount = computed(() => program.value?.cycleCount ?? program.value?.cycles?.length ?? 0)
+const totalSubjects = computed(() => program.value?.subjectCount ?? getTotalSubjects(program.value?.cycles))
+const isCurriculumHidden = computed(
+  () => program.value?.showCurriculum === false && cycleCount.value > 0,
+)
 </script>
 
 <template>
@@ -35,7 +39,10 @@ const totalSubjects = computed(() => getTotalSubjects(program.value?.cycles))
           <span v-if="program.period"><strong>Periodo</strong>{{ program.period }}</span>
           <span v-if="program.rvoe"><strong>RVOE</strong>{{ program.rvoe }}</span>
         </div>
-        <a class="hero-link" href="#novedades">Recibir novedades <span class="material-icon" aria-hidden="true">south</span></a>
+        <a class="hero-link" href="#novedades">
+          {{ isCurriculumHidden ? 'Solicitar plan de estudios' : 'Recibir novedades' }}
+          <span class="material-icon" aria-hidden="true">south</span>
+        </a>
       </div>
     </header>
 
@@ -78,7 +85,7 @@ const totalSubjects = computed(() => getTotalSubjects(program.value?.cycles))
         </article>
       </section>
 
-      <section v-if="program.cycles.length" class="curriculum">
+      <section v-if="program.cycles.length && program.showCurriculum !== false" class="curriculum">
         <div class="section-heading">
           <div>
             <p class="section-kicker">{{ program.curriculumTitle || 'Plan de estudios 2025' }}</p>
@@ -150,13 +157,49 @@ const totalSubjects = computed(() => getTotalSubjects(program.value?.cycles))
         </p>
       </section>
 
+      <section v-else-if="isCurriculumHidden" class="curriculum-request">
+        <p class="section-kicker">{{ program.curriculumTitle || 'Plan de estudios' }}</p>
+        <h2>Estructura académica y tira de materias</h2>
+        <div class="curriculum-highlights" aria-label="Resumen de estructura académica">
+          <span>
+            <span class="material-icon" aria-hidden="true">view_agenda</span>
+            {{ cycleCount }} {{ program.cycleUnit || 'ciclos académicos' }}
+          </span>
+          <span>
+            <span class="material-icon" aria-hidden="true">menu_book</span>
+            {{ totalSubjects }} asignaturas
+          </span>
+          <span v-if="program.modality">
+            <span class="material-icon" aria-hidden="true">apartment</span>
+            Modalidad {{ program.modality.toLowerCase() }}
+          </span>
+          <span v-if="program.period">
+            <span class="material-icon" aria-hidden="true">event</span>
+            Inicio: {{ program.period }}
+          </span>
+        </div>
+        <p class="curriculum-request-copy">
+          La tira completa de materias y el desglose curricular de este posgrado se entregan al solicitar informes con el Instituto.
+        </p>
+        <div class="curriculum-request-actions">
+          <a class="curriculum-cta-primary" href="#novedades">
+            Solicitar plan de estudios e informes
+            <span class="material-icon" aria-hidden="true">south</span>
+          </a>
+          <RouterLink class="curriculum-cta-secondary" to="/contacto">
+            Atención directa en Contacto
+            <span class="material-icon" aria-hidden="true">arrow_outward</span>
+          </RouterLink>
+        </div>
+      </section>
+
       <section v-else class="curriculum-pending">
         <p class="section-kicker">Plan de estudios</p>
         <h2>Contenido académico en integración</h2>
         <p>El temario, los perfiles y la duración de este tipo de oferta se publicarán cuando el IAP confirme sus programas vigentes.</p>
       </section>
 
-      <PreEnrollmentForm :key="program.slug" :program-title="program.title" />
+      <PreEnrollmentForm :key="program.slug" :program-title="program.title" :request-curriculum="isCurriculumHidden" />
     </section>
   </div>
 </template>
@@ -599,6 +642,98 @@ h2 {
   background: var(--color-surface-soft);
 }
 
+.curriculum-request {
+  margin-top: 3.5rem;
+  padding: 2.25rem;
+  border: 1px solid var(--color-border);
+  border-top: 2px solid var(--color-primary);
+  background: var(--color-surface);
+}
+
+.curriculum-request .section-kicker {
+  color: var(--color-secondary-text);
+}
+
+.curriculum-request h2 {
+  margin: 0 0 1.25rem;
+  font-size: clamp(1.75rem, 3vw, 2.35rem);
+}
+
+.curriculum-highlights {
+  display: flex;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.65rem 1.25rem;
+}
+
+.curriculum-highlights > span {
+  display: inline-flex;
+  padding: 0.45rem 0.75rem;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid var(--color-border);
+  border-radius: 2px;
+  color: var(--color-green-text);
+  background: var(--color-surface-soft);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.curriculum-highlights .material-icon {
+  color: var(--color-secondary-text);
+  font-size: 1.05rem;
+}
+
+.curriculum-request-copy {
+  max-width: 720px;
+  margin: 0 0 1.5rem;
+  color: var(--color-muted);
+  line-height: 1.7;
+}
+
+.curriculum-request-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.curriculum-cta-primary,
+.curriculum-cta-secondary {
+  display: inline-flex;
+  min-height: 44px;
+  padding: 0 1.15rem;
+  align-items: center;
+  gap: 0.6rem;
+  border-radius: 2px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+.curriculum-cta-primary {
+  border: 1px solid var(--color-primary);
+  color: #fff;
+  background: var(--color-primary);
+}
+
+.curriculum-cta-primary:hover {
+  background: #61112b;
+  border-color: #61112b;
+}
+
+.curriculum-cta-secondary {
+  border: 1px solid var(--color-border);
+  color: var(--color-primary-text);
+  background: var(--color-surface-soft);
+}
+
+.curriculum-cta-secondary:hover {
+  border-color: var(--color-secondary-text);
+  color: var(--color-green-text);
+}
+
 .curriculum-pending h2 {
   margin-top: 0;
 }
@@ -664,6 +799,20 @@ h2 {
   .curriculum-total {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .curriculum-request {
+    padding: 1.5rem;
+  }
+
+  .curriculum-request-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .curriculum-cta-primary,
+  .curriculum-cta-secondary {
+    justify-content: space-between;
   }
 }
 </style>

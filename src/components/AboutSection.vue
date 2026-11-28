@@ -26,7 +26,7 @@ const isPrincipleOpen = (number) =>
           El Instituto de Administración Pública del Estado de Veracruz, A.C. es una asociación civil fundada en 1973, dedicada a la profesionalización de las personas del sector público y a la mejora de la gestión gubernamental en el estado.
         </p>
         <RouterLink v-if="props.compact" class="about-link" to="/conocenos">
-          Conoce el Instituto, Consejo y sede
+          Conoce el Instituto y nuestra sede
           <span class="material-icon" aria-hidden="true">arrow_outward</span>
         </RouterLink>
         <RouterLink v-else class="about-link" to="/contacto">
@@ -49,7 +49,7 @@ const isPrincipleOpen = (number) =>
       </div>
     </div>
 
-    <div class="principles-heading">
+    <div :id="!props.compact ? 'principios' : undefined" class="principles-heading">
       <div>
         <p class="section-kicker">Nuestro propósito</p>
         <h3>Principios que nos orientan</h3>
@@ -90,7 +90,7 @@ const isPrincipleOpen = (number) =>
       </article>
     </div>
 
-    <div v-if="!props.compact" class="facilities">
+    <div v-if="!props.compact" id="instalaciones" class="facilities">
       <div class="facilities-heading">
         <p class="section-kicker">Instalaciones</p>
         <h3>Espacios para aprender y dialogar</h3>

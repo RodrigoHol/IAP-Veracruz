@@ -7,6 +7,7 @@ const searchQuery = ref('')
 const selectedTopic = ref('Todos')
 const topics = ['Todos', 'Administración Pública', 'Gestión Municipal', 'Derecho Administrativo', 'Revistas IAP']
 const publications = []
+const hasPublications = computed(() => publications.length > 0)
 
 const filteredPublications = computed(() => {
   const query = sanitizeText(searchQuery.value, 120).toLocaleLowerCase('es-MX')
@@ -45,15 +46,21 @@ const filteredPublications = computed(() => {
         <span>{{ filteredPublications.length }} títulos</span>
       </div>
 
-      <div class="catalog-tools">
+      <div class="catalog-tools" :class="{ 'is-disabled': !hasPublications }">
         <label class="search-field">
           <span class="visually-hidden">Buscar por título o autor</span>
           <span class="material-icon search-icon" aria-hidden="true">search</span>
-          <input v-model="searchQuery" type="search" maxlength="120" placeholder="Buscar por título o autor" />
+          <input
+            v-model="searchQuery"
+            type="search"
+            maxlength="120"
+            :disabled="!hasPublications"
+            :placeholder="hasPublications ? 'Buscar por título o autor' : 'Búsqueda disponible próximamente'"
+          />
         </label>
         <label class="topic-select">
           <span class="visually-hidden">Filtrar por eje temático</span>
-          <select v-model="selectedTopic">
+          <select v-model="selectedTopic" :disabled="!hasPublications">
             <option v-for="topic in topics" :key="topic" :value="topic">{{ topic }}</option>
           </select>
         </label>
@@ -169,6 +176,15 @@ h2 {
   display: flex;
   margin-bottom: 2rem;
   gap: 0.8rem;
+}
+
+.catalog-tools.is-disabled {
+  opacity: 0.62;
+}
+
+.catalog-tools input:disabled,
+.catalog-tools select:disabled {
+  cursor: not-allowed;
 }
 
 .search-field,

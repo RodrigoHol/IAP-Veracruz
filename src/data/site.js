@@ -4,7 +4,7 @@ export const siteInfo = {
   foundedYear: 1973,
   phoneDisplay: '228 237 0893',
   phoneHref: 'tel:2282370893',
-  phoneNote: 'Atención exclusiva por llamadas telefónicas',
+  phoneNote: 'Línea directa de atención telefónica',
   addressLines: [
     'Colmerillo No. 3, Nuevo Xalapa,',
     '91097 Xalapa-Enríquez, Veracruz.',
@@ -28,5 +28,11 @@ export const socialLinks = [
     label: 'Facebook',
     ariaLabel: 'Facebook oficial del IAP Veracruz',
     href: 'https://www.facebook.com/IAP.Veracruz.Oficial/',
+  },
+  {
+    id: 'tiktok',
+    label: 'TikTok',
+    ariaLabel: 'TikTok oficial del IAP Veracruz',
+    href: 'https://www.tiktok.com/@iap.veracruz?_r=1&_t=ZS-9BhyFGFHiDs',
   },
 ]

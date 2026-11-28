@@ -22,3 +22,8 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 *.swp
+
+# Documentación interna de planeación y presentaciones del cliente
+PLAN_CORRECCIONES.md
+Plan_IAP_2026-2030_15_diapositivas_ok.pptx
+*.pptx

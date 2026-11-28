@@ -39,7 +39,12 @@ const handleProgramFocusOut = (event) => {
   <header class="site-header">
     <div class="header-inner">
       <RouterLink class="brand" to="/" aria-label="IAP Veracruz, inicio" @click="closeMenu">
-        <img :src="`${baseUrl}images/iap-logo-horizontal.png`" alt="IAP Veracruz — Instituto de Administración Pública" />
+        <img
+          :src="`${baseUrl}images/iap-logo-horizontal.png`"
+          alt="IAP Veracruz — Instituto de Administración Pública"
+          width="520"
+          height="135"
+        />
       </RouterLink>
 
       <button
@@ -370,6 +375,7 @@ const handleProgramFocusOut = (event) => {
     place-items: center;
     border: 1px solid var(--color-border);
     border-radius: 3px;
+    color: var(--color-ink);
     background: transparent;
     cursor: pointer;
   }

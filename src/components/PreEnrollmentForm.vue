@@ -8,11 +8,20 @@ import {
   SUBMIT_COOLDOWN_MS,
   validatePreEnrollmentForm,
 } from '../utils/formValidation'
+import {
+  buildSubmissionPayload,
+  isValidGoogleScriptUrl,
+  submitToGoogleSheets,
+} from '../utils/formSubmission'
 
-defineProps({
+const props = defineProps({
   programTitle: {
     type: String,
     required: true,
+  },
+  requestCurriculum: {
+    type: Boolean,
+    default: false,
   },
 })
 
@@ -30,8 +39,18 @@ const errors = ref({})
 const notice = ref('')
 const noticeType = ref('info')
 const lastSubmitAt = ref(0)
+const isSubmitting = ref(false)
+const endpointUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL
 
-const demoMessage = `Esta vista previa no envía tus datos ni activa una suscripción. Para recibir información oficial, llama al ${siteInfo.phoneDisplay}.`
+const resetForm = () => {
+  form.name = ''
+  form.email = ''
+  form.phone = ''
+  form.agency = ''
+  form.education = ''
+  form.contactMethod = ''
+  form.website = ''
+}
 
 const clearFieldError = (field) => {
   if (errors.value[field]) {
@@ -41,7 +60,9 @@ const clearFieldError = (field) => {
   }
 }
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
+  if (isSubmitting.value) return
+
   const now = Date.now()
   if (now - lastSubmitAt.value < SUBMIT_COOLDOWN_MS) {
     noticeType.value = 'error'
@@ -49,13 +70,19 @@ const handleSubmit = () => {
     return
   }
 
-  const result = validatePreEnrollmentForm(form)
+  const result = validatePreEnrollmentForm({
+    ...form,
+    program: props.programTitle,
+  })
 
   if (result.isBot) {
     lastSubmitAt.value = now
     errors.value = {}
-    noticeType.value = 'info'
-    notice.value = demoMessage
+    resetForm()
+    noticeType.value = 'success'
+    notice.value = props.requestCurriculum
+      ? '¡Solicitud registrada! El equipo del IAP Veracruz te compartirá el plan de estudios e informes por el medio que elegiste.'
+      : '¡Registro recibido! Te mantendremos al tanto de las próximas convocatorias y novedades del programa.'
     return
   }
 
@@ -66,23 +93,77 @@ const handleSubmit = () => {
     return
   }
 
-  lastSubmitAt.value = now
+  if (!isValidGoogleScriptUrl(endpointUrl)) {
+    lastSubmitAt.value = now
+    errors.value = {}
+    noticeType.value = 'info'
+    notice.value = `El registro en línea se habilitará en breve. Para solicitar informes o el plan de estudios ahora mismo, comunícate al ${siteInfo.phoneDisplay}.`
+    return
+  }
+
+  isSubmitting.value = true
   errors.value = {}
-  noticeType.value = 'info'
-  notice.value = demoMessage
+  notice.value = ''
+
+  try {
+    const payload = buildSubmissionPayload(result.sanitized, {
+      programTitle: props.programTitle,
+      requestCurriculum: props.requestCurriculum,
+    })
+    const response = await submitToGoogleSheets(payload, { endpointUrl })
+
+    lastSubmitAt.value = Date.now()
+
+    if (response.ok) {
+      resetForm()
+      noticeType.value = 'success'
+      notice.value = props.requestCurriculum
+        ? '¡Solicitud registrada! El equipo del IAP Veracruz te compartirá el plan de estudios e informes por el medio que elegiste.'
+        : '¡Registro recibido! Te mantendremos al tanto de las próximas convocatorias y novedades del programa.'
+      return
+    }
+
+    noticeType.value = 'error'
+    notice.value = `No pudimos completar el envío en este momento. Intenta de nuevo en unos segundos o llámanos al ${siteInfo.phoneDisplay}.`
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>
 
 <template>
   <section id="novedades" class="pre-enrollment">
     <div class="form-intro">
-      <p class="section-kicker">Noticias y convocatorias</p>
-      <h2>Mantente al tanto de las novedades</h2>
-      <p>Comparte tus datos para recibir primero avisos sobre nuevas convocatorias, fechas y noticias del programa.</p>
-      <p class="privacy-note">Esta versión de demostración no envía ni almacena datos. No ingreses información personal.</p>
+      <p class="section-kicker">{{ requestCurriculum ? 'Informes y plan de estudios' : 'Noticias y convocatorias' }}</p>
+      <h2>{{ requestCurriculum ? 'Solicita informes y el plan de estudios' : 'Mantente al tanto de las novedades' }}</h2>
+      <p>
+        {{
+          requestCurriculum
+            ? 'Comparte tus datos para solicitar la tira de materias, fechas de convocatoria e información detallada del programa.'
+            : 'Comparte tus datos para recibir primero avisos sobre nuevas convocatorias, fechas y noticias del programa.'
+        }}
+      </p>
+      <p class="privacy-note">
+        Tus datos serán utilizados únicamente por el IAP Veracruz para brindarte informes académicos y dar seguimiento a tu solicitud.
+      </p>
     </div>
 
-    <form class="enrollment-form" novalidate @submit.prevent="handleSubmit">
+    <form class="enrollment-form" :class="{ 'is-submitting': isSubmitting }" novalidate @submit.prevent="handleSubmit">
+      <Transition name="submit-fade">
+        <div v-if="isSubmitting" class="submit-overlay" role="status" aria-live="polite">
+          <div class="submit-progress" aria-hidden="true">
+            <span class="submit-progress-bar"></span>
+          </div>
+          <div class="submit-loader-card">
+            <span class="submit-spinner" aria-hidden="true"></span>
+            <div class="submit-loader-copy">
+              <strong>Registrando tu solicitud…</strong>
+              <span>Enviando tus datos de forma segura al IAP Veracruz.</span>
+            </div>
+          </div>
+        </div>
+      </Transition>
+
       <div class="hp-field" aria-hidden="true">
         <label>
           Sitio web
@@ -97,6 +178,7 @@ const handleSubmit = () => {
           name="name"
           autocomplete="name"
           :maxlength="FIELD_LIMITS.name"
+          :disabled="isSubmitting"
           :aria-invalid="Boolean(errors.name)"
           :aria-describedby="errors.name ? 'error-name' : undefined"
           required
@@ -113,6 +195,7 @@ const handleSubmit = () => {
           type="email"
           autocomplete="email"
           :maxlength="FIELD_LIMITS.email"
+          :disabled="isSubmitting"
           :aria-invalid="Boolean(errors.email)"
           :aria-describedby="errors.email ? 'error-email' : undefined"
           required
@@ -129,6 +212,7 @@ const handleSubmit = () => {
           type="tel"
           autocomplete="tel"
           :maxlength="FIELD_LIMITS.phone"
+          :disabled="isSubmitting"
           :aria-invalid="Boolean(errors.phone)"
           :aria-describedby="errors.phone ? 'error-phone' : undefined"
           required
@@ -144,6 +228,7 @@ const handleSubmit = () => {
           name="agency"
           autocomplete="organization"
           :maxlength="FIELD_LIMITS.agency"
+          :disabled="isSubmitting"
           :aria-invalid="Boolean(errors.agency)"
           :aria-describedby="errors.agency ? 'error-agency' : undefined"
           required
@@ -157,6 +242,7 @@ const handleSubmit = () => {
         <select
           v-model="form.education"
           name="education"
+          :disabled="isSubmitting"
           :aria-invalid="Boolean(errors.education)"
           :aria-describedby="errors.education ? 'error-education' : undefined"
           required
@@ -177,6 +263,7 @@ const handleSubmit = () => {
 
       <fieldset
         class="contact-preference"
+        :disabled="isSubmitting"
         :aria-invalid="Boolean(errors.contactMethod)"
         :aria-describedby="errors.contactMethod ? 'error-contact-method' : undefined"
       >
@@ -205,10 +292,33 @@ const handleSubmit = () => {
         </span>
       </fieldset>
 
-      <button type="submit">Quiero recibir novedades <span class="material-icon" aria-hidden="true">arrow_outward</span></button>
-      <p v-if="notice" class="form-notice" :class="{ 'is-error': noticeType === 'error' }" role="status">
-        {{ notice }}
-      </p>
+      <button type="submit" :disabled="isSubmitting" :aria-busy="isSubmitting">
+        <span>
+          {{
+            isSubmitting
+              ? 'Enviando solicitud…'
+              : requestCurriculum
+                ? 'Solicitar plan de estudios'
+                : 'Quiero recibir novedades'
+          }}
+        </span>
+        <span v-if="isSubmitting" class="button-spinner" aria-hidden="true"></span>
+        <span v-else class="material-icon" aria-hidden="true">arrow_outward</span>
+      </button>
+
+      <Transition name="notice-fade">
+        <div
+          v-if="notice"
+          class="form-notice"
+          :class="{ 'is-error': noticeType === 'error', 'is-success': noticeType === 'success' }"
+          role="status"
+        >
+          <span class="material-icon notice-icon" aria-hidden="true">
+            {{ noticeType === 'success' ? 'check_circle' : noticeType === 'error' ? 'error' : 'info' }}
+          </span>
+          <p>{{ notice }}</p>
+        </div>
+      </Transition>
     </form>
   </section>
 </template>
@@ -254,9 +364,81 @@ h2 {
 }
 
 .enrollment-form {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
+}
+
+.submit-overlay {
+  position: absolute;
+  inset: -0.5rem;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgba(252, 251, 248, 0.82);
+  background: color-mix(in srgb, var(--color-section) 82%, transparent);
+  backdrop-filter: blur(2.5px);
+}
+
+.submit-progress {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  overflow: hidden;
+  background: var(--color-border);
+}
+
+.submit-progress-bar {
+  display: block;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary), var(--color-primary));
+  animation: progressSlide 1.25s ease-in-out infinite;
+}
+
+.submit-loader-card {
+  display: flex;
+  width: 100%;
+  max-width: 380px;
+  padding: 1.35rem 1.5rem;
+  align-items: center;
+  gap: 1.1rem;
+  border: 1px solid var(--color-border);
+  border-top: 3px solid var(--color-primary);
+  background: var(--color-surface);
+  box-shadow: 0 16px 36px rgba(24, 51, 47, 0.14);
+}
+
+.submit-spinner {
+  position: relative;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-right-color: var(--color-secondary);
+  border-radius: 50%;
+  animation: spinLoader 0.85s linear infinite;
+}
+
+.submit-loader-copy strong {
+  display: block;
+  color: var(--color-green-text);
+  font-family: var(--font-heading);
+  font-size: 1.08rem;
+  font-weight: 400;
+}
+
+.submit-loader-copy span {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
 }
 
 .hp-field {
@@ -396,21 +578,116 @@ button {
   font-weight: 700;
 }
 
-button:hover {
+button:hover:not(:disabled) {
   background: #61112b;
 }
 
+button:disabled {
+  opacity: 0.78;
+  cursor: wait;
+}
+
+.button-spinner {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spinLoader 0.75s linear infinite;
+}
+
 .form-notice {
+  grid-column: 1 / -1;
+  display: flex;
   margin: 0;
-  align-self: center;
+  padding: 0.9rem 1rem;
+  align-items: flex-start;
+  gap: 0.65rem;
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-secondary);
+  background: var(--color-surface);
   color: var(--color-green-text);
-  font-size: 0.75rem;
-  line-height: 1.5;
+}
+
+.form-notice p {
+  margin: 0;
+  font-size: 0.8rem !important;
+  line-height: 1.55 !important;
+}
+
+.notice-icon {
+  flex: 0 0 auto;
+  margin-top: 0.05rem;
+  color: var(--color-secondary-text);
+  font-size: 1.15rem;
+}
+
+.form-notice.is-success {
+  border-left-color: var(--color-green-text);
+  font-weight: 600;
+}
+
+.form-notice.is-success .notice-icon {
+  color: var(--color-green-text);
 }
 
 .form-notice.is-error {
+  border-left-color: var(--color-primary);
   color: var(--color-primary-text);
   font-weight: 600;
+}
+
+.form-notice.is-error .notice-icon {
+  color: var(--color-primary-text);
+}
+
+.submit-fade-enter-active,
+.submit-fade-leave-active,
+.notice-fade-enter-active,
+.notice-fade-leave-active {
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.submit-fade-enter-from,
+.submit-fade-leave-to,
+.notice-fade-enter-from,
+.notice-fade-leave-to {
+  opacity: 0;
+}
+
+.notice-fade-enter-from {
+  transform: translateY(4px);
+}
+
+@keyframes spinLoader {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes progressSlide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .submit-progress-bar,
+  .submit-spinner,
+  .button-spinner {
+    animation-duration: 2.5s;
+  }
+
+  .submit-fade-enter-active,
+  .submit-fade-leave-active,
+  .notice-fade-enter-active,
+  .notice-fade-leave-active {
+    transition: opacity 1ms linear;
+  }
 }
 
 @media (max-width: 760px) {

@@ -1,7 +1,5 @@
 <script setup>
 import AboutSection from '../components/AboutSection.vue'
-import CouncilSection from '../components/CouncilSection.vue'
-import OrganigramSection from '../components/OrganigramSection.vue'
 </script>
 
 <template>
@@ -16,15 +14,15 @@ import OrganigramSection from '../components/OrganigramSection.vue'
 
         <nav class="page-anchors" aria-label="Secciones de Conócenos">
           <a href="#instituto">
-            <span>Instituto e instalaciones</span>
+            <span>Presentación</span>
             <span class="material-icon" aria-hidden="true">south</span>
           </a>
-          <a href="#consejo">
-            <span>Consejo Directivo</span>
+          <a href="#principios">
+            <span>Principios</span>
             <span class="material-icon" aria-hidden="true">south</span>
           </a>
-          <a href="#organigrama">
-            <span>Organigrama</span>
+          <a href="#instalaciones">
+            <span>Instalaciones</span>
             <span class="material-icon" aria-hidden="true">south</span>
           </a>
         </nav>
@@ -32,8 +30,6 @@ import OrganigramSection from '../components/OrganigramSection.vue'
     </header>
 
     <AboutSection />
-    <CouncilSection />
-    <OrganigramSection />
   </div>
 </template>
 

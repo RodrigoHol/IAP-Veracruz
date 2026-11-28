@@ -230,6 +230,10 @@ address {
   gap: 0.6rem;
 }
 
+.contact-social-link:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
 .contact-social-link {
   display: flex;
   min-width: 0;
@@ -353,6 +357,16 @@ iframe {
 
   iframe {
     height: 330px;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-socials {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-social-link:last-child:nth-child(odd) {
+    grid-column: auto;
   }
 }
 </style>
